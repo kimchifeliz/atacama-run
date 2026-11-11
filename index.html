@@ -100,10 +100,10 @@ svg.profile{width:100%;height:auto;display:block}
 /* ---------- storage (per-device) ---------- */
 const KEY='atacama-companion-v1';
 const DEF={
-  settings:{name:'',handle:'',team:'',raceStart:'2026-11-27T04:00',distanceKm:500,legKm:3,teamSize:6},
-  checks:{}, prepLog:[], mood:{}, legs:[], active:null, raceStarted:null,
+  settings:{name:'',handle:'',team:'',raceStart:'2026-11-27T06:00',distanceKm:500,days:8},
+  checks:{}, prepLog:[], mood:{}, legs:[], days:[], active:null, raceStarted:null,
   fuel:[], recovery:{}, posts:[], mantras:[
-    'Just this leg.','Shuffle is still forward.','Smooth, light, relaxed.','The team is carrying me too.','I chose this. I love this.','Sniff the finish.'
+    'Just to the next crew stop.','Shuffle is still forward.','Smooth, light, relaxed.','One day at a time.','My crew has my back.','I chose this. I love this.'
   ]
 };
 let S;
@@ -127,51 +127,53 @@ function altAt(km){for(let i=1;i<ROUTE.length;i++){if(km<=ROUTE[i][0]){const [k0
 
 /* ---------- content: prep plan relative to race day ---------- */
 const PLAN=[
- [-16,'Relay simulation #1','Run 3 × 3 km at goal race effort with 45–60 min sitting in a car between. Learn what “stiff” feels like and how to wake up the legs.','run'],
- [-15,'Easy 40 min + mobility','Hips, calves, glutes. Note which stretches you can do in a cramped car seat.','run'],
- [-14,'Night run','45 min after dark with headlamp + reflective vest. Get used to running alone with your thoughts.','run'],
- [-13,'Rest + gear check','Lay out everything on the packing list. Test every item you’ll wear.','rest'],
- [-12,'Heat session','30–40 min easy in the warmest part of the day (or overdressed). Practise drinking on the move.','run'],
- [-11,'Relay simulation #2 (the big one)','4 × 3 km spread across one evening and early morning: e.g. 21:00, 00:00, 03:00, 06:00. Sleep in between if you can. This rehearses the hardest part of the race.','run'],
- [-10,'Recovery','Easy walk or 20 min jog. Sleep early.','rest'],
- [-9,'Strides + core','30 min easy + 6 × 20 s strides. 10 min core.','run'],
- [-8,'Fuel rehearsal','Eat exactly what the van will have (baguettes, nachos, gels, electrolytes) around a 3 × 2 km session. Find what your stomach accepts at 3 am.','run'],
- [-7,'Easy 35 min','Taper starts. Less volume, keep some speed.','run'],
- [-6,'Mental rehearsal','15 min visualization (Mind tab). Write your 3 mantras. Plan your rough-patch protocol.','mind'],
- [-5,'Short sharp','20 min easy + 4 × 1 km at race effort with 2 min jog.','run'],
- [-4,'Sleep banking begins','Aim for 8.5–9 h per night until the race. Sleep is training now.','rest'],
- [-3,'Travel day / altitude prep','If flying north: hydrate, compression socks, walk around. Easy 20 min shakeout on arrival.','rest'],
- [-2,'Team day','Meet the team, agree on leg order and swap signals. Supermarket run: water (~100 L per team), food, electrolytes.','team'],
- [-1,'Shakeout + early night','15 min jog + strides. Pack the race bag. Charge everything. Lights out early — start is ~4 am.','run'],
- [0,'RACE DAY','Switch to the Race tab. One leg at a time.','race']
+ [-16,'Back-to-back #1, day 1','Long run 25–30 km at easy effort, walking the climbs. Practise eating every 30–45 min and drinking with electrolytes.','run'],
+ [-15,'Back-to-back #1, day 2','20–25 km on tired legs — this is what every day of the race feels like. Start slow, walk when you need to.','run'],
+ [-14,'Recovery + feet','Easy 30 min or rest. Learn your feet: where do hot spots appear? Practise taping them.','rest'],
+ [-13,'Heat session + crew rehearsal','15–20 km in the warmest part of the day, with the crew meeting you every 4–5 km. Time the stops: max 5–10 min.','run'],
+ [-12,'Easy 40 min + mobility','Hips, calves, glutes, feet. Note the stretches that work in a car seat.','run'],
+ [-11,'Back-to-back #2 (the big one)','Day 1: 30 km run/walk with the exact race kit, food and crew stops. Sleep early.','run'],
+ [-10,'Back-to-back #2, day 2','20 km easy. How do the feet, stomach and mind feel on day 2? Write it down in the log.','run'],
+ [-9,'Recovery','Walk or 20 min jog. Sleep 8–9 h.','rest'],
+ [-8,'Gear + food final test','15 km in race shoes + socks + vest. Eat only what the crew will carry. Anything that rubs or upsets the stomach: change it now.','run'],
+ [-7,'Taper: easy 60 min','Volume goes down from here. Keep the legs moving.','run'],
+ [-6,'Mental rehearsal','15 min visualization (Mind tab). Write your 3 mantras. Agree the rough-patch plan with the crew.','mind'],
+ [-5,'Easy 45 min + strides','Feel fresh, not fit. 6 × 20 s relaxed strides.','run'],
+ [-4,'Sleep banking begins','Aim for 8.5–9 h per night until the start. Sleep is training now.','rest'],
+ [-3,'Travel day','If flying north: hydrate, compression socks, walk around. Easy 20 min shakeout on arrival.','rest'],
+ [-2,'Crew briefing + shopping','Walk the crew through the Stages tab, stop plan, safety rules and the phone numbers. Big shop: water, food, electrolytes.','team'],
+ [-1,'Shakeout + early night','20 min easy jog. Pack the day bag. Charge Watch, phone, glasses, power banks. Lights out early.','run'],
+ [0,'START DAY','Switch to the Race tab. One day at a time, one crew stop at a time.','race']
 ];
 
 const PACK={
- 'Running kit':['2–3 pairs of shoes (one half-size up for swelling)','4+ sets of running tops/shorts (dry kit after every leg)','Cap + buff + sunglasses','Light gloves + beanie for night legs','Warm down jacket for the van','Arm sleeves / long sleeve layer','Anti-chafe balm','Spare socks — lots'],
- 'Safety':['Reflective vest (mandatory mindset — trucks!)','Headlamp + spare batteries','Rear red blinking light','Phone + power bank + cable','ID + emergency contact card','Small first-aid kit: blister kit, tape, painkillers'],
- 'Sun & altitude':['SPF 50 sunscreen + lip balm SPF','Moisturiser + saline nasal spray (very dry air)','Electrolyte tabs/powder','Hand sanitiser + wet wipes'],
- 'Recovery in the van':['Small pillow + eye mask + earplugs','Sleeping bag or blanket (below freezing at night)','Massage ball / mini roller','Flip-flops / recovery sandals','Your own water bottle (mark it)'],
- 'Fuel':['Gels/chews you’ve tested','Salty snacks','Easy carbs: bread, bananas, rice cakes','Caffeine for the night legs (tested!)','Something that tastes like comfort'],
- 'Content':['Phone mount / small tripod','Extra power bank just for filming','Lens wipe (dust!)','Team T-shirt / bib for photos']
+ 'Running kit':['2–3 pairs of shoes (one half-size up — feet swell over days)','Running tops/shorts for every day (or wash plan with crew)','Cap with neck flap + buff + sunglasses','Light gloves + beanie for cold early starts','Warm down jacket for evenings','Arm sleeves / long sleeve layer','Sand gaiters','Anti-chafe balm'],
+ 'Feet (critical)':['Lots of socks — dry pair every crew stop if needed','Toe socks or liners if tested','Blister kit: needles, alcohol wipes, Compeed','Rigid tape + Leukotape for hot spots','Foot cream / lube','Nail clippers + file'],
+ 'Safety':['Reflective vest','Headlamp + spare batteries','Rear red blinking light','Phone + power bank + cable','ID + emergency contact card','First-aid kit + painkillers (avoid ibuprofen when dehydrated)'],
+ 'Sun & altitude':['SPF 50 sunscreen + lip balm SPF','Moisturiser + saline nasal spray (very dry air)','Electrolyte tabs/powder — lots','Hand sanitiser + wet wipes'],
+ 'Crew vehicle':['~5–6 L of water per running day for her + crew water','Cooler with ice','Camping chair','Sleeping bag + pillow (below freezing at night)','Massage ball / roller','Recovery sandals','Route notes + crew phone numbers','Hazard lights + a magnetic “runner ahead” sign'],
+ 'Fuel':['Gels/chews you’ve tested','Salty snacks','Easy carbs: bread, bananas, rice, potatoes','Real food for dinners (pasta, rice, soup)','Protein for recovery','Something that tastes like comfort'],
+ 'Content':['Apple Watch charger','Meta glasses + charging case','Extra power bank just for filming','Phone mount / small tripod for the crew','Lens wipe (dust!)']
 };
 
 const STORY_IDEAS=[
  ['Before','Countdown story: “X days to Atacama” card'],
- ['Before','Training: relay simulation in the car — show the stiff legs struggle'],
- ['Before','Night run POV with headlamp'],
+ ['Before','Back-to-back long runs: the day-2 legs struggle'],
+ ['Before','Feet prep: taping & blister kit (people love this)'],
  ['Before','Packing flat-lay of everything on the list'],
- ['Before','Meet the team — 6 runners, 1 desert'],
- ['Before','Supermarket haul: 100 L of water, 60 baguettes 😂'],
- ['Race','4 am start at the beach'],
- ['Race','Sunrise over the pampa'],
- ['Race','Live tracker card after each leg (Stories tab)'],
- ['Race','Life in the van: cold pizza at 3 am'],
- ['Race','Night leg under the stars'],
- ['Race','Rough patch honesty clip — people love the real moments'],
- ['Race','Altitude climb to San Pedro'],
+ ['Before','Meet my crew 🚐'],
+ ['Before','The route: 500 km from the ocean to 2,400 m'],
+ ['Race','Day 1 start at the beach in Iquique'],
+ ['Race','Morning check-in every day (same spot in the frame)'],
+ ['Race','POV from the glasses: trucks, salt roads, empty pampa'],
+ ['Race','Day tracker card at the end of every day'],
+ ['Race','Crew stop life: what I eat in a day'],
+ ['Race','Foot check — honest and gross'],
+ ['Race','Rough patch honesty clip — the real moments'],
+ ['Race','Last day: climb to San Pedro + the volcano'],
  ['After','Finish line + stats card'],
  ['After','What I learned: 3 lessons from 500 km'],
- ['After','Thank-you post tagging the team & sponsors']
+ ['After','Thank-you post tagging the crew & sponsors']
 ];
 
 /* ---------- navigation ---------- */
@@ -197,19 +199,19 @@ let ticks=[];function tick(fn,ms){fn();ticks.push(setInterval(fn,ms||1000))}func
 function Home(){
   const d=daysToRace(), st=S.settings;
   const today=PLAN.find(p=>p[0]===-d);
-  const done=S.legs.filter(l=>l.end).reduce((a,l)=>a+(+l.km||0),0);
+  const done=totKm();
   const mood=S.mood[dayKey()];
   $('#app').innerHTML=`
   <h1>${st.name?`Hi ${esc(st.name)} ☀️`:'Atacama Run Companion'}</h1>
-  <p class="muted">Iquique → San Pedro de Atacama · ~${st.distanceKm} km relay · team of ${st.teamSize}</p>
+  <p class="muted">Iquique → San Pedro de Atacama · ${st.distanceKm} km solo · ${st.days} days · crew-supported</p>
   <div class="hero">
     ${d>0?`<div class="big" id="cd">${d}</div><b>days to the start</b><br><small id="cdx"></small>`
-      : d===0||S.raceStarted&&!S.finished?`<div class="big">RACE DAY</div><b>One leg at a time.</b>`
-      :`<div class="big">Done 🏁</div><b>${done.toFixed(1)} km run by you</b>`}
+      : d===0||S.raceStarted&&!S.finished?`<div class="big">RACE DAY</div><b>Day ${Math.max(1,S.days.length)} of ${st.days}. One crew stop at a time.</b>`
+      :`<div class="big">Done 🏁</div><b>${done.toFixed(0)} km in ${S.days.length} days</b>`}
   </div>
   ${today?`<div class="card"><div class="row between"><h3>Today: ${esc(today[1])}</h3><span class="tag today">today</span></div><p>${esc(today[2])}</p>
     <label class="check ${S.checks['plan'+today[0]]?'done':''}" style="border:0;padding-bottom:0"><input type="checkbox" ${S.checks['plan'+today[0]]?'checked':''} onchange="toggle('plan${today[0]}')"><span class="t">Mark done</span></label></div>`
-    :d>16?`<div class="card"><h3>Base building</h3><p>The day-by-day plan starts 16 days before the race. Until then: keep consistent easy running and start practising runs at night and at odd hours.</p></div>`:''}
+    :d>16?`<div class="card"><h3>Base building</h3><p>The day-by-day plan starts 16 days before the start. Until then: build weekly volume with back-to-back long runs and practise eating and drinking on the move.</p></div>`:''}
   <div class="card"><h3>How are you feeling today?</h3>
     <div class="feel">${['😫','😕','😐','🙂','🔥'].map((e,i)=>`<button class="${mood===i+1?'on':''}" onclick="setMood(${i+1})">${e}</button>`).join('')}</div>
     ${mood&&mood<=2?`<p class="muted" style="margin-top:8px">Low days are part of it. Try 2 minutes of box breathing in the Mind tab, or go easier today. The taper is supposed to feel weird.</p>`:''}
@@ -225,8 +227,8 @@ function Home(){
     <p class="muted" style="margin-top:6px">Approximate profile of the 2023 route — confirm the route with the organiser. From sea level up to 2,400 m at the finish, with a high pass near the end.</p>
     <ul class="list" style="font-size:14px">
       <li>🌡️ Up to ~30 °C by day, below freezing at night</li>
-      <li>🏃 Legs usually 2–3 km, then back into the van. Repeat for 35–45 h</li>
-      <li>🚛 Mining trucks pass fast on the only road: be visible, stay focused</li>
+      <li>🏃 ~${(st.distanceKm/st.days).toFixed(0)} km a day for ${st.days} days in a row — recovery each night is everything</li>
+      <li>🚛 Mining trucks pass fast on the only road: crew behind her, be visible, stay focused</li>
       <li>💧 Air so dry NASA uses it to simulate Mars: drink before you're thirsty</li>
     </ul></div>
   <h2>Settings</h2>
@@ -234,10 +236,10 @@ function Home(){
     <div class="grid2">
       <div><label>Her name</label><input value="${esc(st.name)}" onchange="setS('name',this.value)"></div>
       <div><label>Instagram handle</label><input value="${esc(st.handle)}" placeholder="@handle" onchange="setS('handle',this.value)"></div>
-      <div><label>Team name</label><input value="${esc(st.team)}" onchange="setS('team',this.value)"></div>
-      <div><label>Race start</label><input type="datetime-local" value="${esc(st.raceStart)}" onchange="setS('raceStart',this.value)"></div>
+      <div><label>Hashtag / project name</label><input value="${esc(st.team)}" placeholder="#Atacama500" onchange="setS('team',this.value)"></div>
+      <div><label>Day 1 start</label><input type="datetime-local" value="${esc(st.raceStart)}" onchange="setS('raceStart',this.value)"></div>
       <div><label>Total distance (km)</label><input type="number" value="${st.distanceKm}" onchange="setS('distanceKm',+this.value)"></div>
-      <div><label>Typical leg (km)</label><input type="number" step="0.5" value="${st.legKm}" onchange="setS('legKm',+this.value)"></div>
+      <div><label>Days planned</label><input type="number" min="1" value="${st.days}" onchange="setS('days',Math.max(1,+this.value))"></div>
     </div>
     <div class="row" style="margin-top:12px;flex-wrap:wrap">
       <button class="small ghost" onclick="exportData()">Back up data</button>
@@ -309,21 +311,21 @@ function stopBreath(){clearTimeout(breathT);breathT=null}
 function Mind(){
   let h=`<h1>Mind</h1>`+seg('mind',[['breathe','Breathe'],['sos','Rough patch'],['mantras','Mantras'],['viz','Visualize']]);
   if(sub.mind==='breathe'){
-    h+=`<div class="card" style="text-align:center"><h3>Box breathing</h3><p class="muted">4 in · 4 hold · 4 out · 4 hold. Use it before the start, before each leg, or to fall asleep in the van.</p>
+    h+=`<div class="card" style="text-align:center"><h3>Box breathing</h3><p class="muted">4 in · 4 hold · 4 out · 4 hold. Use it before the start, at crew stops, or to fall asleep at night.</p>
       <div class="breath" id="orb">Ready</div>
       <div class="muted" id="bcount" style="margin-bottom:10px">&nbsp;</div>
       <button class="primary" id="bbtn" onclick="toggleBreath()">Start 2 minutes</button></div>`;
   }
   if(sub.mind==='sos'){
-    h+=`<div class="card sos"><h3>You're in a rough patch. That's normal.</h3><p>Even Olympians in this race had to shuffle and speed-walk the start of their legs on day two. A rough patch is part of the experience — it passes.</p></div>
+    h+=`<div class="card sos"><h3>You're in a rough patch. That's normal.</h3><p>Every multi-day runner hits low points — usually day 2–3 and late afternoons. A rough patch is part of the experience. It passes, often within 30 minutes of eating.</p></div>
       <div class="card"><h3>Do this, in order</h3><ol style="padding-left:20px;margin:0">
         <li><b>Eat + drink now.</b> Most “I can't” moments are low blood sugar. 200 kcal + 300 ml with electrolytes.</li>
-        <li><b>Shrink the world.</b> Forget the km left. Only this leg exists. Then only the next lamp post.</li>
-        <li><b>Shuffle start.</b> Start the leg walking or shuffling. Let the legs warm up for 3–4 min before you judge how you feel.</li>
+        <li><b>Shrink the world.</b> Forget the km left. Only the next crew stop exists. Then only the next road marker.</li>
+        <li><b>Walk 5 minutes.</b> Walking is allowed and smart. Let the legs reset before you judge how you feel.</li>
         <li><b>Breathe 4-4-4-4</b> five times.</li>
         <li><b>Say your mantra out loud.</b> “${esc(S.mantras[0]||'Just this leg.')}”</li>
-        <li><b>Tell the team.</b> They can shorten your next leg. It's a relay, that's the point.</li>
-        <li><b>Warm + sleep.</b> If it's night: warm layers, eyes closed, alarm 15 min before your leg.</li>
+        <li><b>Tell the crew.</b> Shorter gaps between stops, music, a call with someone you love.</li>
+        <li><b>Shorter day is OK.</b> The Stages tab spreads the rest over the remaining days. Sleep fixes a lot.</li>
       </ol></div>
       <div class="card"><h3>Remember why</h3><p class="muted">Write your “why” now, before the race, so it's here when you need it.</p>
       <textarea rows="3" onchange="S.why=this.value;save();toast('Saved')" placeholder="I'm doing this because…">${esc(S.why||'')}</textarea></div>`;
@@ -336,16 +338,16 @@ function Mind(){
   if(sub.mind==='viz'){
     h+=`<div class="card"><h3>10-minute visualization</h3><p class="muted">Do this lying down, eyes closed, the week before. Read a line, close your eyes, see it for a minute.</p>
       <ol style="padding-left:20px">
-        <li>The 4 am start by the ocean. Cold air, drones buzzing, nervous laughs. Feel calm excitement.</li>
-        <li>Your first leg: smooth, controlled, not too fast. Hand-off is clean.</li>
+        <li>Day 1, the start by the ocean in Iquique. Cool air, the crew cheering. Feel calm excitement.</li>
+        <li>The long climb out of the city: you walk the steep parts, controlled, not too fast.</li>
         <li>Midday on the pampa. Hot sun, white salt on black road. You drink, you’re steady.</li>
-        <li>Night. Headlamp circle, stars, a truck rumbles past and you stay calm and visible.</li>
-        <li>3 am. You’re stiff and tired getting out of the van. You shuffle the first minutes, then the legs wake up. You’ve rehearsed this.</li>
-        <li>Dawn on day two. The hardest part is behind you. The team is laughing again.</li>
-        <li>The climb to San Pedro, the volcano ahead. You run the last leg with the team. The finish.</li>
+        <li>Evening. Feet up, warm food, stars over the desert. You sleep deeply.</li>
+        <li>Day 3 morning. You’re stiff and sore. You walk the first minutes, then the legs wake up. You’ve rehearsed this.</li>
+        <li>Halfway. The hardest part is behind you. You and the crew are laughing again.</li>
+        <li>The last day: the climb to San Pedro, the volcano ahead. The crew runs the last metres with you. The finish.</li>
       </ol></div>
       <div class="card"><h3>Pre-race journal</h3>
-      ${['What am I most afraid of — and what will I do if it happens?','What does a great race look like for me (not the clock)?','Who am I running for?'].map((q,i)=>`<label>${q}</label><textarea rows="2" onchange="S['j${i}']=this.value;save()">${esc(S['j'+i]||'')}</textarea>`).join('')}</div>`;
+      ${['What am I most afraid of — and what will I do if it happens?','What does a great journey look like for me (not the clock)?','Who am I running for?'].map((q,i)=>`<label>${q}</label><textarea rows="2" onchange="S['j${i}']=this.value;save()">${esc(S['j'+i]||'')}</textarea>`).join('')}</div>`;
   }
   $('#app').innerHTML=h;
 }
@@ -358,80 +360,116 @@ function toggleBreath(){
   step();
 }
 
-/* ---------- RACE ---------- */
-function racePhase(d){const h=d.getHours();if(h>=6&&h<8)return 'dawn';if(h>=8&&h<18)return 'day';if(h>=18&&h<21)return 'dusk';return 'night'}
+/* ---------- RACE (solo, multi-day, crew-supported) ---------- */
+function racePhase(d){const h=d.getHours();if(h>=5&&h<8)return 'dawn';if(h>=8&&h<18)return 'day';if(h>=18&&h<21)return 'dusk';return 'night'}
 const PHASE={
- day:['☀️ Day — heat & sun','Cap, sunglasses, SPF every few hours','Drink 500–750 ml per hour awake, add electrolytes','Wet buff on the neck for hot legs','Shade in the van, don’t sit in the sun'],
- dusk:['🌇 Sunset — get ready for the cold','Put on reflective vest + headlamp NOW','Layers ready in the van before the temperature drops','Eat a proper meal — night is long','Great light for content 📸'],
- night:['🌙 Night — cold, dark, trucks','Vest + headlamp + rear light on every leg','Warm layers on as soon as you get in the van','Sleep whenever you have >60 min off','Caffeine only if tested; stay with your thoughts, not against them'],
- dawn:['🌅 Dawn — lowest point, best moment','Hardest mental hour: expect it, it passes','Eat something warm or sweet','Sun is coming — strip layers progressively','Film the sunrise, it’ll lift everyone']
+ day:['☀️ Day — heat & sun','Cap, sunglasses, SPF every 2 hours','Drink 500–750 ml per hour, with electrolytes','Wet buff on the neck; crew stops every 3–5 km in the heat','Walk the climbs — save the legs for tomorrow'],
+ dusk:['🌇 Sunset — wrap up the day','If still running: reflective vest + headlamp NOW','Layers on as soon as you stop — it gets cold fast','Eat a proper recovery meal','Golden light for content 📸'],
+ night:['🌙 Night — recover, don’t run','Sleep is the most important training of the whole trip','Warm sleeping bag — below freezing outside','Feet up, eat, drink, then lights out','If you must run in the dark: vest + headlamp + crew right behind you'],
+ dawn:['🌅 Dawn — start early, beat the heat','First km slow: walk/shuffle until the legs wake up','Warm layers, strip as the sun comes up','Eat breakfast at least 30 min before starting','Film the sunrise — best light of the day']
 };
-const RECOV=['Drink 300–500 ml + electrolytes','Eat 150–250 kcal','Dry top + socks on','Warm layer on (if cool)','2 min hips & calves stretch','Legs up / lie down','Alarm 15 min before next leg','5 min walk + drills before next leg (beat the stiffness!)'];
+const MORNING=['Check urine colour (pale = OK)','Feet: tape hot spots, lube, fresh socks','Sunscreen + lip balm','Breakfast 600–800 kcal','Review today’s stage + crew stop plan','Morning check-in story 📸'];
+const RECOV=['Refill bottles + electrolytes','Eat 200–300 kcal','Sunscreen again','Feet check / dry socks if sandy or wet','Max 5–10 min sitting (don’t get stiff)','Agree where the crew waits next'];
+const EVENING=['Recovery meal + protein within 30 min','Drink until urine is pale again','Feet care: clean, treat blisters, air out','Legs up 15 min / compression','Gentle stretch or massage','Plan tomorrow with the crew','Day recap story 📸','Lights out — aim for 8 h'];
+const totKm=()=>S.legs.filter(l=>l.end).reduce((a,l)=>a+(+l.km||0),0);
+const dayKmOf=n=>S.legs.filter(l=>l.end&&l.day===n).reduce((a,l)=>a+(+l.km||0),0);
+const dayMsOf=n=>S.legs.filter(l=>l.end&&l.day===n).reduce((a,l)=>a+(l.end-l.start),0);
+const curDay=()=>S.days.find(d=>!d.end);
+const lastDay=()=>S.days[S.days.length-1];
+const dayNo=()=>S.days.length;
+function stageOf(n){const t=S.settings.distanceKm/S.settings.days;return [(n-1)*t,Math.min(S.settings.distanceKm,n*t)]}
+function towns(a,b){const f=500/S.settings.distanceKm;return ROUTE.filter(r=>r[2]&&r[0]>=a*f-1&&r[0]<=b*f+1).map(r=>r[2])}
+function climb(a,b){const f=500/S.settings.distanceKm;let up=0,prev=altAt(a*f);for(let k=a*f;k<=b*f;k+=5){const al=altAt(k);if(al>prev)up+=al-prev;prev=al}return Math.round(up/10)*10}
+function todayTarget(){const n=Math.max(1,dayNo()),left=S.settings.distanceKm-(totKm()-dayKmOf(n)),daysLeft=Math.max(1,S.settings.days-n+1);return left/daysLeft}
+function checklist(prefix,items){return items.map((r,i)=>{const id=prefix+'-'+i,on=S.recovery[id];return `<label class="check ${on?'done':''}"><input type="checkbox" ${on?'checked':''} onchange="S.recovery['${id}']=!S.recovery['${id}'];save();render()"><span class="t">${r}</span></label>`}).join('')}
 function Race(){
-  const st=S.settings, legs=S.legs.filter(l=>l.end), km=legs.reduce((a,l)=>a+(+l.km||0),0), runMs=legs.reduce((a,l)=>a+(l.end-l.start),0);
-  let h=`<h1>Race</h1>`+seg('race',[['live','Live'],['legs','My legs'],['safety','Safety']]);
+  const st=S.settings, cd=curDay(), n=dayNo(), tk=totKm();
+  let h=`<h1>Race</h1>`+seg('race',[['live','Live'],['stages','Stages'],['log','Log'],['safety','Safety']]);
   if(sub.race==='live'){
     const ph=racePhase(new Date()),P=PHASE[ph];
-    h+=`<div class="card" style="text-align:center">
-      <div class="muted">Race clock</div>
-      <div class="timer" id="rc">${S.raceStarted?'':'–:––'}</div>
-      ${S.raceStarted?`<div class="muted" style="margin-top:6px">Started ${new Date(S.raceStarted).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit'})}</div>`:`<button class="primary" style="margin-top:10px" onclick="startRace()">Start race clock</button>`}
-    </div>
-    <div class="grid3" style="margin-bottom:12px">
-      <div class="stat"><b>${legs.length}</b><span>Legs</span></div>
-      <div class="stat"><b>${km.toFixed(1)}</b><span>My km</span></div>
-      <div class="stat"><b>${fmtPace(runMs,km).replace('/km','')}</b><span>Avg pace</span></div>
-    </div>
-    ${S.active?`<div class="card" style="text-align:center;border-color:var(--sun)"><div class="tag sun">Leg ${legs.length+1} running</div><div class="timer" id="lt" style="margin:10px 0"></div>
-      <button class="big primary" onclick="endLeg()">Finish leg</button></div>`
-     :`<button class="big primary" onclick="startLeg()" style="margin-bottom:12px">▶ Start my leg ${legs.length+1}</button>`}
-    ${!S.active&&legs.length?`<div class="card"><div class="row between"><h3>Between legs</h3><span class="muted" id="since"></span></div>
-      ${RECOV.map((r,i)=>{const id=legs.length+'-'+i,on=S.recovery[id];return `<label class="check ${on?'done':''}"><input type="checkbox" ${on?'checked':''} onchange="S.recovery['${id}']=!S.recovery['${id}'];save();render()"><span class="t">${r}</span></label>`}).join('')}</div>`:''}
-    <div class="phase ${ph}"><b>${P[0]}</b><ul>${P.slice(1).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    const dk=cd?dayKmOf(n):0, tgt=todayTarget();
+    h+=`<div class="grid3" style="margin-bottom:12px">
+      <div class="stat"><b>${n||0}<small style="font-size:14px">/${st.days}</small></b><span>Day</span></div>
+      <div class="stat"><b>${tk.toFixed(0)}</b><span>of ${st.distanceKm} km</span></div>
+      <div class="stat"><b>${Math.round(tk/st.distanceKm*100)}%</b><span>Done</span></div></div>`;
+    if(cd){
+      const [a,b]=stageOf(n);
+      h+=`<div class="card"><div class="row between"><h3>Day ${n}</h3><span class="muted" id="dayclock"></span></div>
+        <div class="timer" style="font-size:44px">${dk.toFixed(1)} <small style="font-size:20px">/ ${tgt.toFixed(0)} km</small></div>
+        <div style="background:var(--line);border-radius:99px;height:10px;margin:10px 0"><div style="background:var(--sun);height:10px;border-radius:99px;width:${Math.min(100,dk/tgt*100)}%"></div></div>
+        <p class="muted">Stage plan: km ${a.toFixed(0)}–${b.toFixed(0)} · ${towns(a,b).join(' → ')||'open desert'} · ~${climb(a,b)} m climbing</p></div>`;
+      h+=S.active?`<div class="card" style="text-align:center;border-color:var(--sun)"><div class="tag sun">Running</div><div class="timer" id="lt" style="margin:10px 0"></div>
+          <button class="big primary" onclick="endLeg()">🚐 Crew stop</button></div>`
+        :`<button class="big primary" onclick="startLeg()" style="margin-bottom:12px">▶ Start running</button>`;
+      const segs=S.legs.filter(l=>l.end&&l.day===n);
+      if(!S.active&&segs.length)h+=`<div class="card"><div class="row between"><h3>Crew stop</h3><span class="muted" id="since"></span></div>${checklist('c'+S.legs.length,RECOV)}</div>`;
+      if(!S.active)h+=`<button class="ghost" style="width:100%;margin-bottom:12px" onclick="endDay()">🏁 Finish day ${n}</button>`;
+    }else{
+      const ld=lastDay(), finished=tk>=st.distanceKm-0.5||S.finished;
+      if(ld&&!finished)h+=`<div class="card"><h3>Evening — day ${ld.n} done ✔ ${dayKmOf(ld.n).toFixed(1)} km</h3>${checklist('e'+ld.n,EVENING)}</div>`;
+      if(finished)h+=`<div class="card" style="text-align:center"><h3>🏁 You did it. ${tk.toFixed(0)} km in ${n} days.</h3><button class="primary" onclick="sub.story='make';storyT='finish';go('story')">Make finish story</button></div>`;
+      else h+=`<div class="card"><h3>Morning — before day ${n+1}</h3>${checklist('m'+(n+1),MORNING)}</div>
+        <button class="big primary" onclick="startDay()" style="margin-bottom:12px">☀️ Start day ${n+1}</button>`;
+    }
+    h+=`<div class="phase ${ph}"><b>${P[0]}</b><ul>${P.slice(1).map(x=>`<li>${x}</li>`).join('')}</ul></div>
     <div class="card"><h3>Fuel & water</h3>
       <div class="grid3">${[['💧','Water'],['⚡','Electrolytes'],['🍌','Food']].map(([e,t])=>`<button onclick="addFuel('${t}')">${e} ${t}<br><small class="muted">${fuelCount(t)} · ${lastFuel(t)}</small></button>`).join('')}</div>
     </div>
     <button class="big sos" onclick="sub.mind='sos';go('mind')">I'm struggling — help</button>
-    <div class="row" style="margin-top:12px;gap:8px"><button class="ghost small" style="flex:1" onclick="sub.story='make';storyT='live';go('story')">📸 Make live story</button>
-      ${S.raceStarted?`<button class="ghost small" onclick="if(confirm('Reset race clock and all legs?')){S.raceStarted=null;S.legs=[];S.active=null;S.recovery={};S.fuel=[];save();render()}">Reset</button>`:''}</div>`;
+    <div class="row" style="margin-top:12px;gap:8px"><button class="ghost small" style="flex:1" onclick="sub.story='make';storyT='live';go('story')">📸 Make day story</button>
+      ${S.days.length?`<button class="ghost small" onclick="if(confirm('Reset all race days and runs?')){S.days=[];S.legs=[];S.active=null;S.recovery={};S.fuel=[];S.finished=false;save();render()}">Reset</button>`:''}</div>`;
   }
-  if(sub.race==='legs'){
-    h+=`<div class="card"><ul class="list">${legs.length?legs.map((l,i)=>`<li><div class="row between"><b>Leg ${i+1} · ${l.km} km</b><span class="muted">${new Date(l.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></div>
-      <div class="muted">${fmtDur(l.end-l.start)} · ${fmtPace(l.end-l.start,l.km)} · ${['','😫','😕','😐','🙂','🔥'][l.feel]||''} ${esc(l.note||'')}</div></li>`).join(''):'<li class="muted">No legs yet.</li>'}</ul></div>`;
+  if(sub.race==='stages'){
+    h+=`<p class="muted">${st.distanceKm} km over ${st.days} days ≈ ${(st.distanceKm/st.days).toFixed(0)} km/day. Change days in Settings (Today tab). Climbing is approximate.</p><div class="card"><ul class="list">`;
+    for(let i=1;i<=st.days;i++){const [a,b]=stageOf(i),done=dayKmOf(i),date=new Date(raceDate());date.setDate(date.getDate()+i-1);
+      h+=`<li><div class="row between"><b>Day ${i} · ${(b-a).toFixed(0)} km</b><span class="muted">${date.toLocaleDateString([], {weekday:'short',day:'numeric',month:'short'})}</span></div>
+        <div class="muted">km ${a.toFixed(0)}–${b.toFixed(0)} · ${towns(a,b).join(' → ')||'open desert'} · ~${climb(a,b)} m up · ends ~${altAt(b*500/st.distanceKm)} m</div>
+        ${done?`<div style="font-size:14px;margin-top:2px">✔ ran ${done.toFixed(1)} km</div>`:''}</li>`}
+    h+=`</ul></div>`;
+  }
+  if(sub.race==='log'){
+    h+=S.days.length?S.days.map(d=>{const segs=S.legs.filter(l=>l.end&&l.day===d.n);return `<div class="card"><div class="row between"><h3>Day ${d.n}</h3><span class="muted">${dayKmOf(d.n).toFixed(1)} km · ${fmtHM(dayMsOf(d.n))} moving</span></div>
+      <ul class="list">${segs.map((l,i)=>`<li class="muted">${new Date(l.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})} · ${l.km} km · ${fmtDur(l.end-l.start)} · ${fmtPace(l.end-l.start,l.km)} ${['','😫','😕','😐','🙂','🔥'][l.feel]||''}</li>`).join('')||'<li class="muted">No runs logged.</li>'}</ul></div>`}).join(''):'<div class="card muted">No days yet.</div>';
   }
   if(sub.race==='safety'){
     h+=`<div class="card"><h3>Non-negotiables</h3><ul class="list">
-      <li>🦺 Reflective vest + lights on every night leg, no exceptions</li>
-      <li>🚛 Big trucks pass at over 120 km/h. Single file, as far from the lane as possible, never wear both earbuds</li>
-      <li>🚐 The van follows/shadows the runner at night with hazard lights</li>
-      <li>🥶 Signs of hypothermia at night (shivering won't stop, confusion) → warm up in the van, skip a leg</li>
+      <li>🚐 Crew vehicle behind her with hazard lights on the highway, especially on climbs and bends</li>
+      <li>🚛 Mining trucks pass at over 100 km/h. Run facing traffic, as far off the lane as possible, never both earbuds in</li>
+      <li>🦺 Reflective vest + lights whenever it's dark or dusk, no exceptions</li>
+      <li>🦶 Feet decide multi-day races: treat hot spots at the first crew stop they appear, not at night</li>
+      <li>🩸 Dark/cola-coloured urine, or not peeing for hours → stop, drink, and see a doctor if it doesn't clear (rhabdo / kidney risk)</li>
+      <li>🧂 Drinking lots of plain water with no salt can be dangerous too: always add electrolytes</li>
+      <li>🦵 Sharp pain in one spot (shin, Achilles, foot) that gets worse each day → walk, ice, consider a shorter day</li>
       <li>🥵 Heat illness (dizzy, stopped sweating, nausea) → stop, shade, cool, fluids</li>
-      <li>⛰️ Altitude near the end (up to ~3,000 m+): headache, unusual breathlessness → slow down, tell the team</li>
-      <li>🚓 If police stop the group: stay calm and polite, follow instructions, let the captain talk</li>
-      <li>🙅 Nobody is too tough to skip a leg. Safety beats the clock.</li></ul></div>
+      <li>⛰️ Final days climb up to ~3,000 m+: headache, unusual breathlessness → slow down, tell the crew</li>
+      <li>🚓 If police stop you: stay calm and polite, let the crew driver talk</li>
+      <li>🙅 A shorter day is not failure. The plan adapts automatically.</li></ul></div>
       <div class="card"><h3>Emergency info</h3><p class="muted">Chile: Ambulance 131 · Fire 132 · Police 133</p>
       <label>Emergency contact</label><input value="${esc(S.emerg||'')}" onchange="S.emerg=this.value;save();toast('Saved')" placeholder="Name + phone">
+      <label>Crew driver phone</label><input value="${esc(S.crewPhone||'')}" onchange="S.crewPhone=this.value;save();toast('Saved')">
       <label>Medical notes (allergies, meds)</label><input value="${esc(S.med||'')}" onchange="S.med=this.value;save();toast('Saved')"></div>`;
   }
   $('#app').innerHTML=h;
-  tick(()=>{if($('#rc')&&S.raceStarted)$('#rc').textContent=fmtDur(Date.now()-S.raceStarted);if($('#lt')&&S.active)$('#lt').textContent=fmtDur(Date.now()-S.active.start);
-    const last=S.legs.filter(l=>l.end).slice(-1)[0];if($('#since')&&last)$('#since').textContent=`off for ${fmtDur(Date.now()-last.end)}`});
+  tick(()=>{if($('#lt')&&S.active)$('#lt').textContent=fmtDur(Date.now()-S.active.start);
+    const cdd=curDay();if($('#dayclock')&&cdd)$('#dayclock').textContent=`on the road ${fmtHM(Date.now()-cdd.start)}`;
+    const last=S.legs.filter(l=>l.end).slice(-1)[0];if($('#since')&&last)$('#since').textContent=`stopped ${fmtDur(Date.now()-last.end)}`});
 }
-function startRace(){S.raceStarted=Date.now();save();render()}
-function startLeg(){if(!S.raceStarted)S.raceStarted=Date.now();S.active={start:Date.now()};save();render()}
+function startDay(){S.days.push({n:S.days.length+1,start:Date.now()});if(!S.raceStarted)S.raceStarted=Date.now();save();render()}
+function endDay(){const d=curDay();if(!d)return;if(!confirm(`Finish day ${d.n} with ${dayKmOf(d.n).toFixed(1)} km?`))return;d.end=Date.now();if(totKm()>=S.settings.distanceKm-0.5)S.finished=true;save();toast('Day done. Eat, feet, sleep 💛');render()}
+function startLeg(){if(!curDay())startDay();S.active={start:Date.now()};save();render()}
 function endLeg(){
   const ms=Date.now()-S.active.start;
-  const km=parseFloat(prompt(`Leg done in ${fmtDur(ms)}! How many km?`,S.settings.legKm));if(isNaN(km))return;
-  const feel=parseInt(prompt('How did it feel? 1 😫  2 😕  3 😐  4 🙂  5 🔥','4'))||3;
-  S.legs.push({start:S.active.start,end:Date.now(),km,feel:Math.min(5,Math.max(1,feel))});S.active=null;save();toast('Leg saved. Recover well 💛');render();
+  const km=parseFloat(prompt(`Ran for ${fmtDur(ms)}. How many km? (check your Watch)`,'5'));if(isNaN(km))return;
+  const feel=parseInt(prompt('How do you feel? 1 😫  2 😕  3 😐  4 🙂  5 🔥','4'))||3;
+  S.legs.push({start:S.active.start,end:Date.now(),km,feel:Math.min(5,Math.max(1,feel)),day:dayNo()});S.active=null;save();toast('Saved. Refill & refuel 💛');render();
 }
 function addFuel(t){S.fuel.push({t,at:Date.now()});save();toast(t+' logged');render()}
-function fuelCount(t){return S.fuel.filter(f=>f.t===t).length}
+function fuelCount(t){const d=curDay()||lastDay();return S.fuel.filter(f=>f.t===t&&(!d||f.at>=d.start)).length}
 function lastFuel(t){const f=S.fuel.filter(f=>f.t===t).slice(-1)[0];if(!f)return 'never';const m=Math.round((Date.now()-f.at)/6e4);return m<60?`${m}m ago`:`${Math.floor(m/60)}h ago`}
 
 /* ---------- STORIES ---------- */
 let storyT='countdown',storyQuote=0,storyTitle='',storyPhoto=null;
-const TPL=[['countdown','Countdown'],['training','Training'],['live','Live tracker'],['quote','Mantra'],['finish','Finish'],['photo','Photo + stats']];
+const TPL=[['countdown','Countdown'],['training','Training'],['live','Day tracker'],['quote','Mantra'],['finish','Finish'],['photo','Photo + stats']];
 function Story(){
   if(!S.posts.length){S.posts=STORY_IDEAS.map(([ph,t],i)=>({id:i,phase:ph,title:t,status:'idea'}));save()}
   let h=`<h1>Stories</h1>`+seg('story',[['make','Create'],['plan','Content plan']]);
@@ -495,9 +533,9 @@ function draw(){
   if(storyT==='countdown'){
     txt(d>0?String(d):'0',80,820,F('900',d>99?360:440),ink);
     txt(d===1?'DAY TO GO':'DAYS TO GO',90,920,F('800',72),ink);
-    wrap(storyTitle||`${st.distanceKm} km across the driest desert on Earth. Non-stop. Day and night.`,90,1040,860,62,F('600',48),sub2);
-    const p=prepProgress();x.fillStyle='rgba(42,18,6,.2)';x.fillRect(90,1250,900,22);x.fillStyle=ink;x.fillRect(90,1250,900*p/100,22);
-    txt(`Prep plan ${p}% done`,90,1320,F('700',38),ink);
+    wrap(storyTitle||`${st.distanceKm} km solo across the driest desert on Earth. ${st.days} days. From the ocean to 2,400 m.`,90,1040,860,62,F('600',48),sub2);
+    const p=prepProgress();x.fillStyle='rgba(42,18,6,.2)';x.fillRect(90,1290,900,22);x.fillStyle=ink;x.fillRect(90,1290,900*p/100,22);
+    txt(`Prep plan ${p}% done`,90,1360,F('700',38),ink);
   }
   if(storyT==='training'){
     const l=S.prepLog.slice(-1)[0];const tot=S.prepLog.reduce((a,l)=>a+(+l.km||0),0);
@@ -509,19 +547,18 @@ function draw(){
     txt(`${tot.toFixed(0)} km logged in prep`,80,1400,F('700',42),ink);
   }
   if(storyT==='live'||storyT==='finish'){
-    const el=S.raceStarted?Date.now()-S.raceStarted:0;
-    txt(storyTitle||(storyT==='finish'?'WE MADE IT 🏁':'LIVE FROM THE DESERT'),80,420,F('900',storyT==='finish'?100:78),ink);
-    txt(storyT==='finish'?'San Pedro de Atacama':`${racePhase(new Date())==='night'?'Night':'Day'} ${el>864e5?2:1} · ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`,80,500,F('600',44),sub2);
-    // stats
-    const rows=[[km.toFixed(1),'KM BY ME'],[String(legs.length),'LEGS'],[el?fmtHM(el):'–','RACE TIME'],[fmtPace(runMs,km).replace('/km',''),'AVG PACE /KM']];
+    const n=Math.max(1,S.days.length),tk=totKm(),dk=dayKmOf(n),dms=dayMsOf(n);
+    txt(storyTitle||(storyT==='finish'?'I MADE IT 🏁':`DAY ${n} OF ${st.days}`),80,420,F('900',storyT==='finish'?110:120),ink);
+    txt(storyT==='finish'?'Iquique → San Pedro de Atacama':`${new Date().toLocaleDateString([], {weekday:'long',day:'numeric',month:'short'})} · Atacama solo`,80,500,F('600',44),sub2);
+    const rows=storyT==='finish'?[[tk.toFixed(0),'KM TOTAL'],[String(S.days.length),'DAYS'],[fmtHM(runMs),'MOVING TIME'],[fmtPace(runMs,tk).replace('/km',''),'AVG PACE /KM']]
+      :[[dk.toFixed(1),'KM TODAY'],[tk.toFixed(0),'KM TOTAL'],[fmtHM(dms),'MOVING TODAY'],[`${Math.round(tk/st.distanceKm*100)}%`,'OF THE ROUTE']];
     rows.forEach(([v,l],i)=>{const cx=80+(i%2)*470,cy=680+Math.floor(i/2)*240;x.font=F('900',120);const fs=Math.min(120,120*420/x.measureText(v).width);txt(v,cx,cy,F('900',fs),ink);txt(l,cx+4,cy+56,F('700',32),sub2)});
-    // route bar
-    const prog=Math.min(1,(km*st.teamSize)/st.distanceKm);
+    const prog=storyT==='finish'?1:Math.min(1,tk/st.distanceKm);
     const by=1210;x.strokeStyle=light?'rgba(255,255,255,.35)':'rgba(42,18,6,.3)';x.lineWidth=14;x.lineCap='round';x.beginPath();x.moveTo(100,by);x.lineTo(980,by);x.stroke();
-    x.strokeStyle=ink;x.beginPath();x.moveTo(100,by);x.lineTo(100+880*(storyT==='finish'?1:prog),by);x.stroke();
-    x.fillStyle=ink;x.beginPath();x.arc(100+880*(storyT==='finish'?1:prog),by,26,0,7);x.fill();
+    x.strokeStyle=ink;x.beginPath();x.moveTo(100,by);x.lineTo(100+880*prog,by);x.stroke();
+    x.fillStyle=ink;x.beginPath();x.arc(100+880*prog,by,26,0,7);x.fill();
     txt('Iquique',100,by+70,F('700',34),sub2);txt('San Pedro',980,by+70,F('700',34),sub2,'right');
-    if(storyT==='live')txt(`team ≈ ${Math.round(prog*100)}% of the way`,540,by-50,F('700',34),sub2,'center');
+    if(storyT==='live')txt(`${Math.max(0,st.distanceKm-tk).toFixed(0)} km to go`,540,by-50,F('700',38),sub2,'center');
   }
   if(storyT==='quote'){
     x.font=F('900',300);x.fillStyle='rgba(242,165,65,.35)';x.textAlign='left';x.fillText('“',60,720);
@@ -531,8 +568,8 @@ function draw(){
   if(storyT==='photo'){
     if(!storyPhoto)wrap('Pick a photo below ↓',540,900,800,70,F('800',60),ink,'center');
     const el=S.raceStarted?Date.now()-S.raceStarted:0;
-    txt(storyTitle||(S.raceStarted?`${km.toFixed(1)} km · ${legs.length} legs`:`${d} days to go`),80,1560,F('900',96),ink);
-    txt(S.raceStarted?`Race time ${fmtHM(el)}`:`${st.distanceKm} km relay across the Atacama`,80,1640,F('600',44),sub2);
+    txt(storyTitle||(S.days.length?`Day ${S.days.length} · ${km.toFixed(0)} km`:`${d} days to go`),80,1560,F('900',96),ink);
+    txt(S.days.length?`${Math.max(0,st.distanceKm-km).toFixed(0)} km to San Pedro`:`${st.distanceKm} km solo across the Atacama`,80,1640,F('600',44),sub2);
   }
   if(st.handle)txt(st.handle.startsWith('@')?st.handle:'@'+st.handle,540,H-110,F('700',38),light?'#fff7ee':'#fff7ee','center');
 }
