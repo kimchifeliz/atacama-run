@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1310">
+<title>Atacama Run Companion</title>
+<style>
+:root{
+  --bg:#f6efe6; --card:#fffaf3; --ink:#2a1d15; --muted:#8a7565; --line:#e7d9c8;
+  --sun:#e0662f; --sun2:#f2a541; --salt:#ffffff; --night:#22304a; --ok:#3f8f5a; --warn:#c0392b;
+  --shadow:0 1px 2px rgba(60,30,10,.06),0 4px 14px rgba(60,30,10,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15100d; --card:#1f1813; --ink:#f3e7da; --muted:#a8907c; --line:#33281f;
+    --sun:#f07a42; --sun2:#f6b65a; --night:#9fb4dd; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15100d; --card:#1f1813; --ink:#f3e7da; --muted:#a8907c; --line:#33281f;
+  --sun:#f07a42; --sun2:#f6b65a; --night:#9fb4dd; --shadow:none;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+h1{font-size:28px;line-height:1.1;margin:8px 0 4px;letter-spacing:-.02em}
+h2{font-size:19px;margin:22px 0 10px;letter-spacing:-.01em}
+h3{font-size:16px;margin:0 0 6px}
+p{margin:0 0 8px}
+.muted{color:var(--muted);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 0 12px;box-shadow:var(--shadow)}
+.row{display:flex;gap:10px;align-items:center}
+.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.stat b{display:block;font-size:24px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+button,.btn{appearance:none;border:0;border-radius:12px;padding:12px 14px;font:600 15px/1 inherit;font-family:inherit;background:var(--line);color:var(--ink);cursor:pointer}
+button.primary{background:var(--sun);color:#fff}
+button.night{background:var(--night);color:var(--bg)}
+button.ghost{background:transparent;border:1px solid var(--line)}
+button.small{padding:8px 10px;font-size:13px;border-radius:10px}
+button.big{width:100%;padding:20px;font-size:19px;border-radius:16px}
+button:active{transform:scale(.98)}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
+.hero{background:linear-gradient(160deg,#e0662f,#f2a541 60%,#f6d7a7);color:#2a1206;border-radius:20px;padding:18px;margin-bottom:12px;position:relative;overflow:hidden}
+.hero .big{font-size:56px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.hero small{opacity:.8}
+.check{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.check:first-child{border-top:0}
+.check input{width:22px;height:22px;flex:0 0 22px;margin-top:1px;accent-color:var(--sun)}
+.check.done .t{text-decoration:line-through;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 7px;border-radius:999px;background:var(--line);color:var(--muted)}
+.tag.sun{background:var(--sun);color:#fff}
+.tag.today{background:var(--ok);color:#fff}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:10}
+nav .in{display:flex;max-width:560px;width:100%}
+nav button{flex:1;background:none;padding:8px 2px;font-size:11px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button svg{width:22px;height:22px}
+nav button.on{color:var(--sun)}
+.seg{display:flex;background:var(--line);border-radius:12px;padding:3px;gap:3px;margin-bottom:12px;overflow-x:auto}
+.seg button{flex:1;background:none;padding:9px 8px;font-size:13px;white-space:nowrap}
+.seg button.on{background:var(--card);box-shadow:var(--shadow)}
+.timer{font-size:54px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-align:center;line-height:1}
+.phase{border-radius:16px;padding:14px;margin-bottom:12px;color:#fff}
+.phase.day{background:linear-gradient(135deg,#e0662f,#f2a541)}
+.phase.dusk{background:linear-gradient(135deg,#7b3f61,#e0662f)}
+.phase.night{background:linear-gradient(135deg,#0f1729,#2c3e66)}
+.phase.dawn{background:linear-gradient(135deg,#2c3e66,#d9876a)}
+.phase ul{margin:6px 0 0;padding-left:18px}
+.list{margin:0;padding:0;list-style:none}
+.list li{padding:10px 0;border-top:1px solid var(--line)}
+.list li:first-child{border-top:0}
+.feel{display:flex;gap:6px}
+.feel button{flex:1;font-size:22px;padding:10px 0}
+.feel button.on{background:var(--sun)}
+.breath{width:200px;height:200px;margin:10px auto;border-radius:50%;background:radial-gradient(circle,var(--sun2),var(--sun));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;transform:scale(.6);transition:transform 4s ease-in-out}
+canvas.preview{width:100%;max-width:300px;display:block;margin:0 auto;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.tpls{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.tpls button{white-space:nowrap}
+.tpls button.on{background:var(--sun);color:#fff}
+.sos{background:var(--warn);color:#fff}
+.hide{display:none!important}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+svg.profile{width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav><div class="in" id="nav"></div></nav>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- storage (per-device) ---------- */
+const KEY='atacama-companion-v1';
+const DEF={
+  settings:{name:'',handle:'',team:'',raceStart:'2026-11-27T04:00',distanceKm:500,legKm:3,teamSize:6},
+  checks:{}, prepLog:[], mood:{}, legs:[], active:null, raceStarted:null,
+  fuel:[], recovery:{}, posts:[], mantras:[
+    'Just this leg.','Shuffle is still forward.','Smooth, light, relaxed.','The team is carrying me too.','I chose this. I love this.','Sniff the finish.'
+  ]
+};
+let S;
+try{S=Object.assign(structuredClone(DEF),JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){S=structuredClone(DEF)}
+S.settings=Object.assign({},DEF.settings,S.settings||{});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1800)}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const fmtDur=ms=>{ms=Math.max(0,ms);const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),s=Math.floor(ms%6e4/1e3);return h?`${h}:${pad(m)}:${pad(s)}`:`${m}:${pad(s)}`};
+const fmtHM=ms=>{const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4);return `${h}h ${pad(m)}m`};
+const fmtPace=(ms,km)=>{if(!km)return '–';const p=ms/km/1000;return `${Math.floor(p/60)}:${pad(Math.round(p%60))}/km`};
+const dayKey=d=>{d=d||new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const raceDate=()=>new Date(S.settings.raceStart);
+const daysToRace=()=>{const a=new Date();a.setHours(0,0,0,0);const b=raceDate();b.setHours(0,0,0,0);return Math.round((b-a)/864e5)};
+
+/* ---------- content: route (2023 route, approximate) ---------- */
+const ROUTE=[[0,0,'Iquique'],[12,550,'Alto Hospicio'],[45,1050,'Pozo Almonte'],[120,1100,''],[190,800,'Quillagua'],[260,1250,'María Elena'],[330,1450,''],[390,2260,'Calama'],[440,3300,'Pass'],[500,2400,'San Pedro']];
+function altAt(km){for(let i=1;i<ROUTE.length;i++){if(km<=ROUTE[i][0]){const [k0,a0]=ROUTE[i-1],[k1,a1]=ROUTE[i];return Math.round(a0+(a1-a0)*(km-k0)/(k1-k0))}}return 2400}
+
+/* ---------- content: prep plan relative to race day ---------- */
+const PLAN=[
+ [-16,'Relay simulation #1','Run 3 × 3 km at goal race effort with 45–60 min sitting in a car between. Learn what “stiff” feels like and how to wake up the legs.','run'],
+ [-15,'Easy 40 min + mobility','Hips, calves, glutes. Note which stretches you can do in a cramped car seat.','run'],
+ [-14,'Night run','45 min after dark with headlamp + reflective vest. Get used to running alone with your thoughts.','run'],
+ [-13,'Rest + gear check','Lay out everything on the packing list. Test every item you’ll wear.','rest'],
+ [-12,'Heat session','30–40 min easy in the warmest part of the day (or overdressed). Practise drinking on the move.','run'],
+ [-11,'Relay simulation #2 (the big one)','4 × 3 km spread across one evening and early morning: e.g. 21:00, 00:00, 03:00, 06:00. Sleep in between if you can. This rehearses the hardest part of the race.','run'],
+ [-10,'Recovery','Easy walk or 20 min jog. Sleep early.','rest'],
+ [-9,'Strides + core','30 min easy + 6 × 20 s strides. 10 min core.','run'],
+ [-8,'Fuel rehearsal','Eat exactly what the van will have (baguettes, nachos, gels, electrolytes) around a 3 × 2 km session. Find what your stomach accepts at 3 am.','run'],
+ [-7,'Easy 35 min','Taper starts. Less volume, keep some speed.','run'],
+ [-6,'Mental rehearsal','15 min visualization (Mind tab). Write your 3 mantras. Plan your rough-patch protocol.','mind'],
+ [-5,'Short sharp','20 min easy + 4 × 1 km at race effort with 2 min jog.','run'],
+ [-4,'Sleep banking begins','Aim for 8.5–9 h per night until the race. Sleep is training now.','rest'],
+ [-3,'Travel day / altitude prep','If flying north: hydrate, compression socks, walk around. Easy 20 min shakeout on arrival.','rest'],
+ [-2,'Team day','Meet the team, agree on leg order and swap signals. Supermarket run: water (~100 L per team), food, electrolytes.','team'],
+ [-1,'Shakeout + early night','15 min jog + strides. Pack the race bag. Charge everything. Lights out early — start is ~4 am.','run'],
+ [0,'RACE DAY','Switch to the Race tab. One leg at a time.','race']
+];
+
+const PACK={
+ 'Running kit':['2–3 pairs of shoes (one half-size up for swelling)','4+ sets of running tops/shorts (dry kit after every leg)','Cap + buff + sunglasses','Light gloves + beanie for night legs','Warm down jacket for the van','Arm sleeves / long sleeve layer','Anti-chafe balm','Spare socks — lots'],
+ 'Safety':['Reflective vest (mandatory mindset — trucks!)','Headlamp + spare batteries','Rear red blinking light','Phone + power bank + cable','ID + emergency contact card','Small first-aid kit: blister kit, tape, painkillers'],
+ 'Sun & altitude':['SPF 50 sunscreen + lip balm SPF','Moisturiser + saline nasal spray (very dry air)','Electrolyte tabs/powder','Hand sanitiser + wet wipes'],
+ 'Recovery in the van':['Small pillow + eye mask + earplugs','Sleeping bag or blanket (below freezing at night)','Massage ball / mini roller','Flip-flops / recovery sandals','Your own water bottle (mark it)'],
+ 'Fuel':['Gels/chews you’ve tested','Salty snacks','Easy carbs: bread, bananas, rice cakes','Caffeine for the night legs (tested!)','Something that tastes like comfort'],
+ 'Content':['Phone mount / small tripod','Extra power bank just for filming','Lens wipe (dust!)','Team T-shirt / bib for photos']
+};
+
+const STORY_IDEAS=[
+ ['Before','Countdown story: “X days to Atacama” card'],
+ ['Before','Training: relay simulation in the car — show the stiff legs struggle'],
+ ['Before','Night run POV with headlamp'],
+ ['Before','Packing flat-lay of everything on the list'],
+ ['Before','Meet the team — 6 runners, 1 desert'],
+ ['Before','Supermarket haul: 100 L of water, 60 baguettes 😂'],
+ ['Race','4 am start at the beach'],
+ ['Race','Sunrise over the pampa'],
+ ['Race','Live tracker card after each leg (Stories tab)'],
+ ['Race','Life in the van: cold pizza at 3 am'],
+ ['Race','Night leg under the stars'],
+ ['Race','Rough patch honesty clip — people love the real moments'],
+ ['Race','Altitude climb to San Pedro'],
+ ['After','Finish line + stats card'],
+ ['After','What I learned: 3 lessons from 500 km'],
+ ['After','Thank-you post tagging the team & sponsors']
+];
+
+/* ---------- navigation ---------- */
+const ICON={
+ home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ prep:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',
+ mind:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
+ race:'<path d="M13 4a1.5 1.5 0 1 0 0-.01M7 21l3-6 3 2v4M10 15l1-5 4 3 3-1M6 12l3-3 3 1"/>',
+ story:'<rect x="6" y="2" width="12" height="20" rx="3"/><circle cx="12" cy="11" r="3"/>'
+};
+const TABS=[['home','Today'],['prep','Prep'],['mind','Mind'],['race','Race'],['story','Stories']];
+let tab=(location.hash||'#home').slice(1);if(!TABS.find(t=>t[0]===tab))tab='home';
+let sub={prep:'plan',mind:'breathe',race:'live',story:'make'};
+function renderNav(){
+  $('#nav').innerHTML=TABS.map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="go('${k}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}</button>`).join('');
+}
+function go(k){tab=k;try{history.replaceState(null,'','#'+k)}catch(e){}render();scrollTo(0,0)}
+function seg(group,opts){return `<div class="seg">${opts.map(([k,l])=>`<button class="${sub[group]===k?'on':''}" onclick="sub.${group}='${k}';render()">${l}</button>`).join('')}</div>`}
+function render(){renderNav();stopTicks();({home:Home,prep:Prep,mind:Mind,race:Race,story:Story})[tab]();}
+let ticks=[];function tick(fn,ms){fn();ticks.push(setInterval(fn,ms||1000))}function stopTicks(){ticks.forEach(clearInterval);ticks=[];stopBreath()}
+
+/* ---------- TODAY ---------- */
+function Home(){
+  const d=daysToRace(), st=S.settings;
+  const today=PLAN.find(p=>p[0]===-d);
+  const done=S.legs.filter(l=>l.end).reduce((a,l)=>a+(+l.km||0),0);
+  const mood=S.mood[dayKey()];
+  $('#app').innerHTML=`
+  <h1>${st.name?`Hi ${esc(st.name)} ☀️`:'Atacama Run Companion'}</h1>
+  <p class="muted">Iquique → San Pedro de Atacama · ~${st.distanceKm} km relay · team of ${st.teamSize}</p>
+  <div class="hero">
+    ${d>0?`<div class="big" id="cd">${d}</div><b>days to the start</b><br><small id="cdx"></small>`
+      : d===0||S.raceStarted&&!S.finished?`<div class="big">RACE DAY</div><b>One leg at a time.</b>`
+      :`<div class="big">Done 🏁</div><b>${done.toFixed(1)} km run by you</b>`}
+  </div>
+  ${today?`<div class="card"><div class="row between"><h3>Today: ${esc(today[1])}</h3><span class="tag today">today</span></div><p>${esc(today[2])}</p>
+    <label class="check ${S.checks['plan'+today[0]]?'done':''}" style="border:0;padding-bottom:0"><input type="checkbox" ${S.checks['plan'+today[0]]?'checked':''} onchange="toggle('plan${today[0]}')"><span class="t">Mark done</span></label></div>`
+    :d>16?`<div class="card"><h3>Base building</h3><p>The day-by-day plan starts 16 days before the race. Until then: keep consistent easy running and start practising runs at night and at odd hours.</p></div>`:''}
+  <div class="card"><h3>How are you feeling today?</h3>
+    <div class="feel">${['😫','😕','😐','🙂','🔥'].map((e,i)=>`<button class="${mood===i+1?'on':''}" onclick="setMood(${i+1})">${e}</button>`).join('')}</div>
+    ${mood&&mood<=2?`<p class="muted" style="margin-top:8px">Low days are part of it. Try 2 minutes of box breathing in the Mind tab, or go easier today. The taper is supposed to feel weird.</p>`:''}
+  </div>
+  <div class="grid2">
+    <div class="stat"><b>${prepProgress()}%</b><span>Prep plan done</span></div>
+    <div class="stat"><b>${packProgress()}%</b><span>Packed</span></div>
+    <div class="stat"><b>${S.prepLog.reduce((a,l)=>a+(+l.km||0),0).toFixed(0)}</b><span>Training km logged</span></div>
+    <div class="stat"><b>${S.posts.filter(p=>p.status==='posted').length}/${S.posts.length||STORY_IDEAS.length}</b><span>Stories posted</span></div>
+  </div>
+  <h2>The race in numbers</h2>
+  <div class="card">${profileSVG(done)}
+    <p class="muted" style="margin-top:6px">Approximate profile of the 2023 route — confirm the route with the organiser. From sea level up to 2,400 m at the finish, with a high pass near the end.</p>
+    <ul class="list" style="font-size:14px">
+      <li>🌡️ Up to ~30 °C by day, below freezing at night</li>
+      <li>🏃 Legs usually 2–3 km, then back into the van. Repeat for 35–45 h</li>
+      <li>🚛 Mining trucks pass fast on the only road: be visible, stay focused</li>
+      <li>💧 Air so dry NASA uses it to simulate Mars: drink before you're thirsty</li>
+    </ul></div>
+  <h2>Settings</h2>
+  <div class="card">
+    <div class="grid2">
+      <div><label>Her name</label><input value="${esc(st.name)}" onchange="setS('name',this.value)"></div>
+      <div><label>Instagram handle</label><input value="${esc(st.handle)}" placeholder="@handle" onchange="setS('handle',this.value)"></div>
+      <div><label>Team name</label><input value="${esc(st.team)}" onchange="setS('team',this.value)"></div>
+      <div><label>Race start</label><input type="datetime-local" value="${esc(st.raceStart)}" onchange="setS('raceStart',this.value)"></div>
+      <div><label>Total distance (km)</label><input type="number" value="${st.distanceKm}" onchange="setS('distanceKm',+this.value)"></div>
+      <div><label>Typical leg (km)</label><input type="number" step="0.5" value="${st.legKm}" onchange="setS('legKm',+this.value)"></div>
+    </div>
+    <div class="row" style="margin-top:12px;flex-wrap:wrap">
+      <button class="small ghost" onclick="exportData()">Back up data</button>
+      <button class="small ghost" onclick="importData()">Restore</button>
+    </div>
+    <p class="muted" style="margin-top:8px">Data is saved on this phone only. Tap “Back up data” now and then.</p>
+  </div>`;
+  if(d>0)tick(()=>{const el=$('#cdx');if(!el)return;const ms=raceDate()-new Date();el.textContent=`${Math.floor(ms/864e5)}d ${Math.floor(ms%864e5/3.6e6)}h ${Math.floor(ms%3.6e6/6e4)}m · start ${raceDate().toLocaleString([], {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`},30000);
+}
+function profileSVG(doneKm){
+  const W=520,H=150,maxA=3500,tot=S.settings.distanceKm||500;
+  const x=k=>10+k/500*(W-20), y=a=>H-22-a/maxA*(H-40);
+  const pts=ROUTE.map(r=>`${x(r[0])},${y(r[1])}`).join(' ');
+  const dk=Math.min(500,doneKm/tot*500);
+  return `<svg class="profile" viewBox="0 0 ${W} ${H}">
+   <polygon points="${x(0)},${H-22} ${pts} ${x(500)},${H-22}" fill="var(--sun2)" opacity=".25"/>
+   <polyline points="${pts}" fill="none" stroke="var(--sun)" stroke-width="2.5" stroke-linejoin="round"/>
+   ${dk>0?`<line x1="${x(dk)}" x2="${x(dk)}" y1="12" y2="${H-22}" stroke="var(--ink)" stroke-dasharray="3 3"/><circle cx="${x(dk)}" cy="${y(altAt(dk))}" r="5" fill="var(--ink)"/>`:''}
+   ${ROUTE.filter(r=>r[2]).map(r=>`<text x="${x(r[0])}" y="${H-6}" font-size="10" fill="var(--muted)" text-anchor="${r[0]===0?'start':r[0]===500?'end':'middle'}">${r[2]}</text>`).join('')}
+   <text x="${x(500)}" y="${y(2400)-8}" font-size="11" fill="var(--ink)" text-anchor="end" font-weight="700">2,400 m</text>
+  </svg>`;
+}
+function setS(k,v){S.settings[k]=v;save();toast('Saved')}
+function setMood(v){S.mood[dayKey()]=v;save();render()}
+function toggle(id){S.checks[id]=!S.checks[id];save();render()}
+function prepProgress(){const n=PLAN.length-1;return Math.round(PLAN.filter(p=>p[0]<0&&S.checks['plan'+p[0]]).length/n*100)}
+function packProgress(){const all=Object.entries(PACK).flatMap(([g,a])=>a.map((_,i)=>'pk'+g+i));return Math.round(all.filter(k=>S.checks[k]).length/all.length*100)}
+function exportData(){const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`atacama-backup-${dayKey()}.json`;a.click()}
+function importData(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=async()=>{try{S=Object.assign(structuredClone(DEF),JSON.parse(await i.files[0].text()));save();render();toast('Restored')}catch(e){toast('Could not read that file')}};i.click()}
+
+/* ---------- PREP ---------- */
+function Prep(){
+  let h=`<h1>Preparation</h1>`+seg('prep',[['plan','Plan'],['log','Training log'],['pack','Packing']]);
+  if(sub.prep==='plan'){
+    const d=daysToRace();
+    h+=`<p class="muted">The race's key skill: running hard, sitting stiff in a van, then running again — day and night. The plan rehearses exactly that, then tapers.</p><div class="card">`;
+    PLAN.forEach(([off,t,desc,kind])=>{
+      const date=new Date(raceDate());date.setDate(date.getDate()+off);
+      const id='plan'+off,isToday=off===-d,past=off<-d;
+      h+=`<div class="check ${S.checks[id]?'done':''}">${off<0?`<input type="checkbox" ${S.checks[id]?'checked':''} onchange="toggle('${id}')">`:'<span style="width:22px">🏁</span>'}
+        <div><div class="row" style="gap:6px;flex-wrap:wrap"><b class="t">${esc(t)}</b>${isToday?'<span class="tag today">today</span>':''}${kind==='run'?'':`<span class="tag">${kind}</span>`}</div>
+        <div class="muted">${date.toLocaleDateString([], {weekday:'short',day:'numeric',month:'short'})} · ${off===0?'race':`D${off}`}${past&&!S.checks[id]?' · missed? no stress':''}</div>
+        <div style="font-size:14px;margin-top:3px">${esc(desc)}</div></div></div>`;
+    });
+    h+=`</div>`;
+  }
+  if(sub.prep==='log'){
+    h+=`<div class="card"><h3>Log a session</h3>
+      <div class="grid2"><div><label>Type</label><select id="lt"><option>Easy run</option><option>Relay simulation</option><option>Night run</option><option>Heat run</option><option>Intervals</option><option>Strength / mobility</option><option>Rest</option></select></div>
+      <div><label>Distance (km)</label><input id="lk" type="number" step="0.1" inputmode="decimal"></div></div>
+      <label>Effort (1 easy – 10 max)</label><input id="le" type="range" min="1" max="10" value="5">
+      <label>Notes (sleep, stomach, how the legs felt after sitting…)</label><textarea id="ln" rows="2"></textarea>
+      <button class="primary" style="width:100%;margin-top:10px" onclick="addLog()">Save session</button></div>
+      <div class="card"><ul class="list">${S.prepLog.length?S.prepLog.slice().reverse().map((l,i)=>`<li><div class="row between"><b>${esc(l.type)}${l.km?` · ${l.km} km`:''}</b><span class="muted">${esc(l.date)} · RPE ${l.rpe}</span></div>${l.note?`<div class="muted">${esc(l.note)}</div>`:''}</li>`).join(''):'<li class="muted">No sessions yet.</li>'}</ul></div>`;
+  }
+  if(sub.prep==='pack'){
+    h+=`<p class="muted">${packProgress()}% packed</p>`;
+    for(const [g,items] of Object.entries(PACK)){
+      h+=`<div class="card"><h3>${g}</h3>${items.map((it,i)=>{const id='pk'+g+i;return `<label class="check ${S.checks[id]?'done':''}"><input type="checkbox" ${S.checks[id]?'checked':''} onchange="toggle('${id}')"><span class="t">${esc(it)}</span></label>`}).join('')}</div>`;
+    }
+  }
+  $('#app').innerHTML=h;
+}
+function addLog(){S.prepLog.push({date:dayKey(),type:$('#lt').value,km:+$('#lk').value||0,rpe:$('#le').value,note:$('#ln').value.trim()});save();toast('Session saved');render()}
+
+/* ---------- MIND ---------- */
+let breathT=null;
+function stopBreath(){clearTimeout(breathT);breathT=null}
+function Mind(){
+  let h=`<h1>Mind</h1>`+seg('mind',[['breathe','Breathe'],['sos','Rough patch'],['mantras','Mantras'],['viz','Visualize']]);
+  if(sub.mind==='breathe'){
+    h+=`<div class="card" style="text-align:center"><h3>Box breathing</h3><p class="muted">4 in · 4 hold · 4 out · 4 hold. Use it before the start, before each leg, or to fall asleep in the van.</p>
+      <div class="breath" id="orb">Ready</div>
+      <div class="muted" id="bcount" style="margin-bottom:10px">&nbsp;</div>
+      <button class="primary" id="bbtn" onclick="toggleBreath()">Start 2 minutes</button></div>`;
+  }
+  if(sub.mind==='sos'){
+    h+=`<div class="card sos"><h3>You're in a rough patch. That's normal.</h3><p>Even Olympians in this race had to shuffle and speed-walk the start of their legs on day two. A rough patch is part of the experience — it passes.</p></div>
+      <div class="card"><h3>Do this, in order</h3><ol style="padding-left:20px;margin:0">
+        <li><b>Eat + drink now.</b> Most “I can't” moments are low blood sugar. 200 kcal + 300 ml with electrolytes.</li>
+        <li><b>Shrink the world.</b> Forget the km left. Only this leg exists. Then only the next lamp post.</li>
+        <li><b>Shuffle start.</b> Start the leg walking or shuffling. Let the legs warm up for 3–4 min before you judge how you feel.</li>
+        <li><b>Breathe 4-4-4-4</b> five times.</li>
+        <li><b>Say your mantra out loud.</b> “${esc(S.mantras[0]||'Just this leg.')}”</li>
+        <li><b>Tell the team.</b> They can shorten your next leg. It's a relay, that's the point.</li>
+        <li><b>Warm + sleep.</b> If it's night: warm layers, eyes closed, alarm 15 min before your leg.</li>
+      </ol></div>
+      <div class="card"><h3>Remember why</h3><p class="muted">Write your “why” now, before the race, so it's here when you need it.</p>
+      <textarea rows="3" onchange="S.why=this.value;save();toast('Saved')" placeholder="I'm doing this because…">${esc(S.why||'')}</textarea></div>`;
+  }
+  if(sub.mind==='mantras'){
+    h+=`<div class="card"><h3>Your mantras</h3><p class="muted">Short, present tense, said out loud. Pick 3 favourites and use them in training so they work in the race.</p>
+      <ul class="list">${S.mantras.map((m,i)=>`<li class="row between"><span style="font-size:18px;font-weight:600">${esc(m)}</span><span class="row" style="gap:6px"><button class="small ghost" onclick="sub.story='make';storyT='quote';storyQuote=${i};go('story')">Story</button><button class="small ghost" onclick="S.mantras.splice(${i},1);save();render()">✕</button></span></li>`).join('')}</ul>
+      <div class="row" style="margin-top:10px"><input id="nm" placeholder="Add a mantra"><button class="primary" onclick="if($('#nm').value.trim()){S.mantras.push($('#nm').value.trim());save();render()}">Add</button></div></div>`;
+  }
+  if(sub.mind==='viz'){
+    h+=`<div class="card"><h3>10-minute visualization</h3><p class="muted">Do this lying down, eyes closed, the week before. Read a line, close your eyes, see it for a minute.</p>
+      <ol style="padding-left:20px">
+        <li>The 4 am start by the ocean. Cold air, drones buzzing, nervous laughs. Feel calm excitement.</li>
+        <li>Your first leg: smooth, controlled, not too fast. Hand-off is clean.</li>
+        <li>Midday on the pampa. Hot sun, white salt on black road. You drink, you’re steady.</li>
+        <li>Night. Headlamp circle, stars, a truck rumbles past and you stay calm and visible.</li>
+        <li>3 am. You’re stiff and tired getting out of the van. You shuffle the first minutes, then the legs wake up. You’ve rehearsed this.</li>
+        <li>Dawn on day two. The hardest part is behind you. The team is laughing again.</li>
+        <li>The climb to San Pedro, the volcano ahead. You run the last leg with the team. The finish.</li>
+      </ol></div>
+      <div class="card"><h3>Pre-race journal</h3>
+      ${['What am I most afraid of — and what will I do if it happens?','What does a great race look like for me (not the clock)?','Who am I running for?'].map((q,i)=>`<label>${q}</label><textarea rows="2" onchange="S['j${i}']=this.value;save()">${esc(S['j'+i]||'')}</textarea>`).join('')}</div>`;
+  }
+  $('#app').innerHTML=h;
+}
+function toggleBreath(){
+  if(breathT){stopBreath();render();return}
+  const orb=$('#orb'),cnt=$('#bcount');$('#bbtn').textContent='Stop';
+  const steps=[['Breathe in',1],['Hold',1],['Breathe out',.6],['Hold',.6]];let i=0,end=Date.now()+120000;
+  const step=()=>{if(!$('#orb'))return stopBreath();if(Date.now()>end){orb.textContent='Done 🙏';orb.style.transform='scale(.6)';$('#bbtn').textContent='Again';breathT=null;return}
+    const [t,s]=steps[i%4];orb.textContent=t;orb.style.transform=`scale(${s})`;cnt.textContent=`${Math.ceil((end-Date.now())/1000)}s left`;i++;breathT=setTimeout(step,4000)};
+  step();
+}
+
+/* ---------- RACE ---------- */
+function racePhase(d){const h=d.getHours();if(h>=6&&h<8)return 'dawn';if(h>=8&&h<18)return 'day';if(h>=18&&h<21)return 'dusk';return 'night'}
+const PHASE={
+ day:['☀️ Day — heat & sun','Cap, sunglasses, SPF every few hours','Drink 500–750 ml per hour awake, add electrolytes','Wet buff on the neck for hot legs','Shade in the van, don’t sit in the sun'],
+ dusk:['🌇 Sunset — get ready for the cold','Put on reflective vest + headlamp NOW','Layers ready in the van before the temperature drops','Eat a proper meal — night is long','Great light for content 📸'],
+ night:['🌙 Night — cold, dark, trucks','Vest + headlamp + rear light on every leg','Warm layers on as soon as you get in the van','Sleep whenever you have >60 min off','Caffeine only if tested; stay with your thoughts, not against them'],
+ dawn:['🌅 Dawn — lowest point, best moment','Hardest mental hour: expect it, it passes','Eat something warm or sweet','Sun is coming — strip layers progressively','Film the sunrise, it’ll lift everyone']
+};
+const RECOV=['Drink 300–500 ml + electrolytes','Eat 150–250 kcal','Dry top + socks on','Warm layer on (if cool)','2 min hips & calves stretch','Legs up / lie down','Alarm 15 min before next leg','5 min walk + drills before next leg (beat the stiffness!)'];
+function Race(){
+  const st=S.settings, legs=S.legs.filter(l=>l.end), km=legs.reduce((a,l)=>a+(+l.km||0),0), runMs=legs.reduce((a,l)=>a+(l.end-l.start),0);
+  let h=`<h1>Race</h1>`+seg('race',[['live','Live'],['legs','My legs'],['safety','Safety']]);
+  if(sub.race==='live'){
+    const ph=racePhase(new Date()),P=PHASE[ph];
+    h+=`<div class="card" style="text-align:center">
+      <div class="muted">Race clock</div>
+      <div class="timer" id="rc">${S.raceStarted?'':'–:––'}</div>
+      ${S.raceStarted?`<div class="muted" style="margin-top:6px">Started ${new Date(S.raceStarted).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit'})}</div>`:`<button class="primary" style="margin-top:10px" onclick="startRace()">Start race clock</button>`}
+    </div>
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="stat"><b>${legs.length}</b><span>Legs</span></div>
+      <div class="stat"><b>${km.toFixed(1)}</b><span>My km</span></div>
+      <div class="stat"><b>${fmtPace(runMs,km).replace('/km','')}</b><span>Avg pace</span></div>
+    </div>
+    ${S.active?`<div class="card" style="text-align:center;border-color:var(--sun)"><div class="tag sun">Leg ${legs.length+1} running</div><div class="timer" id="lt" style="margin:10px 0"></div>
+      <button class="big primary" onclick="endLeg()">Finish leg</button></div>`
+     :`<button class="big primary" onclick="startLeg()" style="margin-bottom:12px">▶ Start my leg ${legs.length+1}</button>`}
+    ${!S.active&&legs.length?`<div class="card"><div class="row between"><h3>Between legs</h3><span class="muted" id="since"></span></div>
+      ${RECOV.map((r,i)=>{const id=legs.length+'-'+i,on=S.recovery[id];return `<label class="check ${on?'done':''}"><input type="checkbox" ${on?'checked':''} onchange="S.recovery['${id}']=!S.recovery['${id}'];save();render()"><span class="t">${r}</span></label>`}).join('')}</div>`:''}
+    <div class="phase ${ph}"><b>${P[0]}</b><ul>${P.slice(1).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="card"><h3>Fuel & water</h3>
+      <div class="grid3">${[['💧','Water'],['⚡','Electrolytes'],['🍌','Food']].map(([e,t])=>`<button onclick="addFuel('${t}')">${e} ${t}<br><small class="muted">${fuelCount(t)} · ${lastFuel(t)}</small></button>`).join('')}</div>
+    </div>
+    <button class="big sos" onclick="sub.mind='sos';go('mind')">I'm struggling — help</button>
+    <div class="row" style="margin-top:12px;gap:8px"><button class="ghost small" style="flex:1" onclick="sub.story='make';storyT='live';go('story')">📸 Make live story</button>
+      ${S.raceStarted?`<button class="ghost small" onclick="if(confirm('Reset race clock and all legs?')){S.raceStarted=null;S.legs=[];S.active=null;S.recovery={};S.fuel=[];save();render()}">Reset</button>`:''}</div>`;
+  }
+  if(sub.race==='legs'){
+    h+=`<div class="card"><ul class="list">${legs.length?legs.map((l,i)=>`<li><div class="row between"><b>Leg ${i+1} · ${l.km} km</b><span class="muted">${new Date(l.start).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="muted">${fmtDur(l.end-l.start)} · ${fmtPace(l.end-l.start,l.km)} · ${['','😫','😕','😐','🙂','🔥'][l.feel]||''} ${esc(l.note||'')}</div></li>`).join(''):'<li class="muted">No legs yet.</li>'}</ul></div>`;
+  }
+  if(sub.race==='safety'){
+    h+=`<div class="card"><h3>Non-negotiables</h3><ul class="list">
+      <li>🦺 Reflective vest + lights on every night leg, no exceptions</li>
+      <li>🚛 Big trucks pass at over 120 km/h. Single file, as far from the lane as possible, never wear both earbuds</li>
+      <li>🚐 The van follows/shadows the runner at night with hazard lights</li>
+      <li>🥶 Signs of hypothermia at night (shivering won't stop, confusion) → warm up in the van, skip a leg</li>
+      <li>🥵 Heat illness (dizzy, stopped sweating, nausea) → stop, shade, cool, fluids</li>
+      <li>⛰️ Altitude near the end (up to ~3,000 m+): headache, unusual breathlessness → slow down, tell the team</li>
+      <li>🚓 If police stop the group: stay calm and polite, follow instructions, let the captain talk</li>
+      <li>🙅 Nobody is too tough to skip a leg. Safety beats the clock.</li></ul></div>
+      <div class="card"><h3>Emergency info</h3><p class="muted">Chile: Ambulance 131 · Fire 132 · Police 133</p>
+      <label>Emergency contact</label><input value="${esc(S.emerg||'')}" onchange="S.emerg=this.value;save();toast('Saved')" placeholder="Name + phone">
+      <label>Medical notes (allergies, meds)</label><input value="${esc(S.med||'')}" onchange="S.med=this.value;save();toast('Saved')"></div>`;
+  }
+  $('#app').innerHTML=h;
+  tick(()=>{if($('#rc')&&S.raceStarted)$('#rc').textContent=fmtDur(Date.now()-S.raceStarted);if($('#lt')&&S.active)$('#lt').textContent=fmtDur(Date.now()-S.active.start);
+    const last=S.legs.filter(l=>l.end).slice(-1)[0];if($('#since')&&last)$('#since').textContent=`off for ${fmtDur(Date.now()-last.end)}`});
+}
+function startRace(){S.raceStarted=Date.now();save();render()}
+function startLeg(){if(!S.raceStarted)S.raceStarted=Date.now();S.active={start:Date.now()};save();render()}
+function endLeg(){
+  const ms=Date.now()-S.active.start;
+  const km=parseFloat(prompt(`Leg done in ${fmtDur(ms)}! How many km?`,S.settings.legKm));if(isNaN(km))return;
+  const feel=parseInt(prompt('How did it feel? 1 😫  2 😕  3 😐  4 🙂  5 🔥','4'))||3;
+  S.legs.push({start:S.active.start,end:Date.now(),km,feel:Math.min(5,Math.max(1,feel))});S.active=null;save();toast('Leg saved. Recover well 💛');render();
+}
+function addFuel(t){S.fuel.push({t,at:Date.now()});save();toast(t+' logged');render()}
+function fuelCount(t){return S.fuel.filter(f=>f.t===t).length}
+function lastFuel(t){const f=S.fuel.filter(f=>f.t===t).slice(-1)[0];if(!f)return 'never';const m=Math.round((Date.now()-f.at)/6e4);return m<60?`${m}m ago`:`${Math.floor(m/60)}h ago`}
+
+/* ---------- STORIES ---------- */
+let storyT='countdown',storyQuote=0,storyTitle='',storyPhoto=null;
+const TPL=[['countdown','Countdown'],['training','Training'],['live','Live tracker'],['quote','Mantra'],['finish','Finish'],['photo','Photo + stats']];
+function Story(){
+  if(!S.posts.length){S.posts=STORY_IDEAS.map(([ph,t],i)=>({id:i,phase:ph,title:t,status:'idea'}));save()}
+  let h=`<h1>Stories</h1>`+seg('story',[['make','Create'],['plan','Content plan']]);
+  if(sub.story==='make'){
+    h+=`<p class="muted">Makes a 1080×1920 image ready for Instagram Stories, filled in from your app data.</p>
+      <div class="tpls">${TPL.map(([k,l])=>`<button class="small ${storyT===k?'on':''}" onclick="storyT='${k}';render()">${l}</button>`).join('')}</div>
+      <canvas id="cv" class="preview" width="1080" height="1920"></canvas>
+      <div class="card" style="margin-top:14px">
+        ${storyT==='photo'?`<label>Background photo</label><input type="file" accept="image/*" onchange="loadPhoto(this)">`:''}
+        ${storyT==='quote'?`<label>Mantra</label><select onchange="storyQuote=+this.value;draw()">${S.mantras.map((m,i)=>`<option value="${i}" ${i===storyQuote?'selected':''}>${esc(m)}</option>`).join('')}</select>`:''}
+        <label>Custom headline (optional)</label><input id="sth" value="${esc(storyTitle)}" oninput="storyTitle=this.value;draw()" placeholder="Leave empty for the default">
+        <div class="row" style="margin-top:12px"><button class="primary" style="flex:1" onclick="shareStory()">Share / save image</button></div>
+        <p class="muted" style="margin-top:8px">On iPhone, “Share” opens the share sheet → pick Instagram → Stories. Otherwise the image downloads.</p>
+      </div>`;
+  }
+  if(sub.story==='plan'){
+    const by={Before:[],Race:[],After:[]};S.posts.forEach(p=>(by[p.phase]||(by[p.phase]=[])).push(p));
+    h+=`<p class="muted">Tap the status to move it forward: idea → filmed → posted.</p>`;
+    for(const [ph,arr] of Object.entries(by)){
+      h+=`<div class="card"><h3>${ph}</h3><ul class="list">${arr.map(p=>`<li class="row between"><span style="${p.status==='posted'?'text-decoration:line-through;color:var(--muted)':''}">${esc(p.title)}</span>
+        <button class="small ${p.status==='posted'?'':p.status==='filmed'?'night':'ghost'}" onclick="cyclePost(${p.id})" style="min-width:74px">${p.status==='posted'?'✓ posted':p.status}</button></li>`).join('')}</ul></div>`;
+    }
+    h+=`<div class="card"><div class="row"><input id="np" placeholder="New story idea"><select id="npp" style="width:110px"><option>Before</option><option>Race</option><option>After</option></select><button class="primary" onclick="addPost()">Add</button></div></div>`;
+  }
+  $('#app').innerHTML=h;
+  if(sub.story==='make')draw();
+}
+function cyclePost(id){const p=S.posts.find(p=>p.id===id);p.status={idea:'filmed',filmed:'posted',posted:'idea'}[p.status];save();render()}
+function addPost(){const t=$('#np').value.trim();if(!t)return;S.posts.push({id:Date.now(),phase:$('#npp').value,title:t,status:'idea'});save();render()}
+function loadPhoto(inp){const f=inp.files[0];if(!f)return;const img=new Image();img.onload=()=>{storyPhoto=img;draw()};img.src=URL.createObjectURL(f)}
+
+function draw(){
+  const c=$('#cv');if(!c)return;const x=c.getContext('2d'),W=1080,H=1920,st=S.settings;
+  const legs=S.legs.filter(l=>l.end),km=legs.reduce((a,l)=>a+(+l.km||0),0),runMs=legs.reduce((a,l)=>a+(l.end-l.start),0);
+  const F=(w,s)=>`${w} ${s}px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif`;
+  const txt=(t,X,Y,font,col,align)=>{x.font=font;x.fillStyle=col;x.textAlign=align||'left';x.fillText(t,X,Y)};
+  const wrap=(t,X,Y,maxW,lh,font,col,align)=>{x.font=font;const w=t.split(' ');let line='',yy=Y;for(const word of w){const test=line?line+' '+word:word;if(x.measureText(test).width>maxW&&line){txt(line,X,yy,font,col,align);line=word;yy+=lh}else line=test}txt(line,X,yy,font,col,align);return yy};
+  // background
+  const night=storyT==='live'&&racePhase(new Date())==='night';
+  let g=x.createLinearGradient(0,0,0,H);
+  if(night){g.addColorStop(0,'#0b1222');g.addColorStop(.6,'#22304a');g.addColorStop(1,'#7a4a52')}
+  else if(storyT==='quote'){g.addColorStop(0,'#2a1206');g.addColorStop(1,'#7a3417')}
+  else{g.addColorStop(0,'#f6d7a7');g.addColorStop(.45,'#f2a541');g.addColorStop(1,'#c4471b')}
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  if(storyT==='photo'&&storyPhoto){const r=Math.max(W/storyPhoto.width,H/storyPhoto.height);const iw=storyPhoto.width*r,ih=storyPhoto.height*r;x.drawImage(storyPhoto,(W-iw)/2,(H-ih)/2,iw,ih);
+    const sh=x.createLinearGradient(0,H*.45,0,H);sh.addColorStop(0,'rgba(0,0,0,0)');sh.addColorStop(1,'rgba(0,0,0,.75)');x.fillStyle=sh;x.fillRect(0,0,W,H)}
+  // dunes / mountains silhouette
+  if(storyT!=='photo'){
+    x.fillStyle=night?'rgba(255,255,255,.04)':'rgba(90,30,8,.18)';x.beginPath();x.moveTo(0,H);
+    [[0,1500],[180,1420],[360,1470],[540,1300],[620,1250],[700,1330],[880,1260],[1080,1380],[1080,H]].forEach(([a,b])=>x.lineTo(a,b));x.fill();
+    x.fillStyle=night?'rgba(255,255,255,.07)':'rgba(90,30,8,.28)';x.beginPath();x.moveTo(0,H);
+    [[0,1640],[260,1560],[520,1620],[800,1540],[1080,1610],[1080,H]].forEach(([a,b])=>x.lineTo(a,b));x.fill();
+    if(night){x.fillStyle='rgba(255,255,255,.8)';for(let i=0;i<70;i++){const sx=(i*137.5)%W,sy=(i*89.3)%900;x.beginPath();x.arc(sx,sy,(i%3)+1,0,7);x.fill()}}
+    else if(storyT==='countdown'){x.fillStyle='rgba(255,247,230,.85)';x.beginPath();x.arc(820,520,110,0,7);x.fill()}
+  }
+  const light=storyT==='quote'||night||storyT==='photo';const ink=light?'#fff7ee':'#2a1206',sub2=light?'rgba(255,247,238,.75)':'rgba(42,18,6,.7)';
+  // header
+  txt('ATACAMA',80,150,F('800',44),ink);txt('IQUIQUE → SAN PEDRO · '+st.distanceKm+' KM',80,205,F('600',30),sub2);
+  if(st.team)txt(st.team.toUpperCase(),W-80,150,F('700',30),sub2,'right');
+  const d=daysToRace();
+  if(storyT==='countdown'){
+    txt(d>0?String(d):'0',80,820,F('900',d>99?360:440),ink);
+    txt(d===1?'DAY TO GO':'DAYS TO GO',90,920,F('800',72),ink);
+    wrap(storyTitle||`${st.distanceKm} km across the driest desert on Earth. Non-stop. Day and night.`,90,1040,860,62,F('600',48),sub2);
+    const p=prepProgress();x.fillStyle='rgba(42,18,6,.2)';x.fillRect(90,1250,900,22);x.fillStyle=ink;x.fillRect(90,1250,900*p/100,22);
+    txt(`Prep plan ${p}% done`,90,1320,F('700',38),ink);
+  }
+  if(storyT==='training'){
+    const l=S.prepLog.slice(-1)[0];const tot=S.prepLog.reduce((a,l)=>a+(+l.km||0),0);
+    txt(storyTitle||'TRAINING LOG',80,520,F('900',96),ink);
+    txt(d>0?`D-${d}`:'',80,620,F('700',56),sub2);
+    if(l){txt(l.type,80,800,F('800',72),ink);txt(l.km?`${l.km} km`:'—',80,960,F('900',170),ink);txt(`Effort ${l.rpe}/10`,80,1050,F('700',48),sub2);
+      if(l.note)wrap('“'+l.note+'”',80,1150,900,58,F('500 italic',44),ink)}
+    else wrap('Log a session in the Prep tab to fill this card.',80,800,900,60,F('600',50),ink);
+    txt(`${tot.toFixed(0)} km logged in prep`,80,1400,F('700',42),ink);
+  }
+  if(storyT==='live'||storyT==='finish'){
+    const el=S.raceStarted?Date.now()-S.raceStarted:0;
+    txt(storyTitle||(storyT==='finish'?'WE MADE IT 🏁':'LIVE FROM THE DESERT'),80,420,F('900',storyT==='finish'?100:78),ink);
+    txt(storyT==='finish'?'San Pedro de Atacama':`${racePhase(new Date())==='night'?'Night':'Day'} ${el>864e5?2:1} · ${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`,80,500,F('600',44),sub2);
+    // stats
+    const rows=[[km.toFixed(1),'KM BY ME'],[String(legs.length),'LEGS'],[el?fmtHM(el):'–','RACE TIME'],[fmtPace(runMs,km).replace('/km',''),'AVG PACE /KM']];
+    rows.forEach(([v,l],i)=>{const cx=80+(i%2)*470,cy=680+Math.floor(i/2)*240;x.font=F('900',120);const fs=Math.min(120,120*420/x.measureText(v).width);txt(v,cx,cy,F('900',fs),ink);txt(l,cx+4,cy+56,F('700',32),sub2)});
+    // route bar
+    const prog=Math.min(1,(km*st.teamSize)/st.distanceKm);
+    const by=1210;x.strokeStyle=light?'rgba(255,255,255,.35)':'rgba(42,18,6,.3)';x.lineWidth=14;x.lineCap='round';x.beginPath();x.moveTo(100,by);x.lineTo(980,by);x.stroke();
+    x.strokeStyle=ink;x.beginPath();x.moveTo(100,by);x.lineTo(100+880*(storyT==='finish'?1:prog),by);x.stroke();
+    x.fillStyle=ink;x.beginPath();x.arc(100+880*(storyT==='finish'?1:prog),by,26,0,7);x.fill();
+    txt('Iquique',100,by+70,F('700',34),sub2);txt('San Pedro',980,by+70,F('700',34),sub2,'right');
+    if(storyT==='live')txt(`team ≈ ${Math.round(prog*100)}% of the way`,540,by-50,F('700',34),sub2,'center');
+  }
+  if(storyT==='quote'){
+    x.font=F('900',300);x.fillStyle='rgba(242,165,65,.35)';x.textAlign='left';x.fillText('“',60,720);
+    wrap(storyTitle||S.mantras[storyQuote]||'Just this leg.',90,880,900,130,F('900',110),ink);
+    txt(d>0?`${d} days to Atacama`:'Atacama',90,1500,F('700',44),'#f2a541');
+  }
+  if(storyT==='photo'){
+    if(!storyPhoto)wrap('Pick a photo below ↓',540,900,800,70,F('800',60),ink,'center');
+    const el=S.raceStarted?Date.now()-S.raceStarted:0;
+    txt(storyTitle||(S.raceStarted?`${km.toFixed(1)} km · ${legs.length} legs`:`${d} days to go`),80,1560,F('900',96),ink);
+    txt(S.raceStarted?`Race time ${fmtHM(el)}`:`${st.distanceKm} km relay across the Atacama`,80,1640,F('600',44),sub2);
+  }
+  if(st.handle)txt(st.handle.startsWith('@')?st.handle:'@'+st.handle,540,H-110,F('700',38),light?'#fff7ee':'#fff7ee','center');
+}
+async function shareStory(){
+  const c=$('#cv');const blob=await new Promise(r=>c.toBlob(r,'image/png'));const file=new File([blob],`atacama-${storyT}-${Date.now()}.png`,{type:'image/png'});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file]});return}}catch(e){if(e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=file.name;a.click();toast('Image saved');
+}
+
+window.addEventListener('hashchange',()=>{const t=location.hash.slice(1);if(t!==tab&&TABS.find(x=>x[0]===t)){tab=t;render()}});
+render();
+</script>
+</body>
+</html>
