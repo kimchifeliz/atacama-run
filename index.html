@@ -89,12 +89,21 @@ canvas.preview{width:100%;max-width:300px;display:block;margin:0 auto;border-rad
 .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s}
 .toast.show{opacity:1}
 svg.profile{width:100%;height:auto;display:block}
+#helpbtn{position:fixed;top:calc(12px + env(safe-area-inset-top));right:max(16px,calc(50% - 264px));width:38px;height:38px;border-radius:50%;padding:0;font-size:18px;font-weight:800;background:var(--card);border:1px solid var(--line);color:var(--sun);z-index:15;box-shadow:var(--shadow)}
+#sheet{position:fixed;inset:0;background:rgba(20,10,5,.55);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet-in{background:var(--card);color:var(--ink);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom))}
+.now{border:2px solid var(--sun)}
+.nowstep{display:flex;gap:10px;align-items:center;width:100%;background:var(--bg);margin-top:8px;padding:12px;font-weight:600;line-height:1.3}
+.nowstep .num{flex:0 0 24px;height:24px;border-radius:50%;background:var(--sun);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+main h1{padding-right:48px}
 </style>
 </head>
 <body>
 <main id="app"></main>
 <nav><div class="in" id="nav"></div></nav>
 <div class="toast" id="toast"></div>
+<button id="helpbtn" onclick="showHelp()" aria-label="Help">?</button>
+<div id="sheet" class="hide" onclick="if(event.target===this)closeSheet()"></div>
 
 <script>
 /* ---------- storage (per-device) ---------- */
@@ -195,6 +204,73 @@ function seg(group,opts){return `<div class="seg">${opts.map(([k,l])=>`<button c
 function render(){renderNav();stopTicks();({home:Home,prep:Prep,mind:Mind,race:Race,story:Story})[tab]();}
 let ticks=[];function tick(fn,ms){fn();ticks.push(setInterval(fn,ms||1000))}function stopTicks(){ticks.forEach(clearInterval);ticks=[];stopBreath()}
 
+/* ---------- HELP & TOUR ---------- */
+const HELP={
+ home:['🏠 Today','Your home screen. Open it every morning: the top card tells you exactly what to do today. Settings are at the bottom.'],
+ prep:['✅ Prep','For the weeks before the start.<br><b>Plan</b>: one training session per day, tick it when done.<br><b>Training log</b>: write down what you ran and how it felt.<br><b>Packing</b>: tick things off as you pack.'],
+ mind:['🧠 Mind','Use it any time.<br><b>Breathe</b>: a 2-minute calm-down.<br><b>Rough patch</b>: open it when things get hard during the run.<br><b>Mantras</b> and <b>Visualize</b>: practise these before the start.'],
+ race:['🏃 Race','Only for the run days themselves.<br>1. Morning: tick the checklist, tap <b>Start day</b>.<br>2. Tap <b>Start running</b> when you go.<br>3. When you reach the crew, tap <b>Crew stop</b> and type the km from your Watch.<br>4. Repeat 2–3 all day.<br>5. Evening: tap <b>Finish day</b> and do the evening checklist.<br><b>Stages</b> shows how far each day should go.'],
+ story:['📸 Stories','Turns your numbers into Instagram Story images.<br>1. Pick a design at the top.<br>2. Tap <b>Share</b> → Instagram → Stories.<br><b>Content plan</b> is a list of story ideas: tap the button next to each to mark it filmed or posted.']
+};
+let tourStep=0;
+function openSheet(html){$('#sheet').innerHTML=`<div class="sheet-in">${html}</div>`;$('#sheet').classList.remove('hide')}
+function closeSheet(){$('#sheet').classList.add('hide')}
+function showHelp(){const [t,b]=HELP[tab];openSheet(`<h2 style="margin-top:0">${t}</h2><p>${b}</p>
+  <div class="row" style="margin-top:16px"><button class="ghost" style="flex:1" onclick="tourStep=0;openTour()">Replay the intro</button><button class="primary" style="flex:1" onclick="closeSheet()">Got it</button></div>`)}
+function openTour(){
+  const st=S.settings;
+  const steps=[
+   `<div style="font-size:44px">🏜️</div><h2 style="margin-top:6px">Hi! This is your Atacama coach</h2>
+    <p>It helps you with three things:</p>
+    <ul class="list"><li>✅ <b>Before</b>: your training plan and packing list</li><li>🏃 <b>During</b>: tracking each day of the run with your crew</li><li>📸 <b>Stories</b>: ready-made Instagram Stories from your numbers</li></ul>
+    <p class="muted">First, 30 seconds of setup.</p>`,
+   `<h2 style="margin-top:0">About you</h2>
+    <label>Your name</label><input id="t-name" value="${esc(st.name)}">
+    <label>Instagram handle</label><input id="t-handle" value="${esc(st.handle)}" placeholder="@yourname">
+    <div class="grid2"><div><label>Day 1 start</label><input id="t-start" type="datetime-local" value="${esc(st.raceStart)}"></div>
+    <div><label>How many days</label><input id="t-days" type="number" min="1" value="${st.days}"></div></div>
+    <p class="muted" style="margin-top:8px">You can change these any time at the bottom of the Today tab.</p>`,
+   `<h2 style="margin-top:0">How to use it</h2>
+    <ul class="list">
+     <li><b>Every day until the start</b><br>Open <b>Today</b> and do what the top card says. Tick it when done.</li>
+     <li><b>During the run</b><br>Use the <b>Race</b> tab: <i>Start day</i> → <i>Start running</i> → <i>Crew stop</i> (type km from your Watch) → … → <i>Finish day</i>.</li>
+     <li><b>When it gets hard</b><br>The red <b>“I’m struggling”</b> button on the Race tab.</li>
+     <li><b>For Instagram</b><br><b>Stories</b> tab → pick a design → Share → Instagram.</li>
+     <li><b>Lost?</b> Tap the <b>?</b> at the top right of any screen.</li></ul>`,
+   `<div style="font-size:44px">📲</div><h2 style="margin-top:6px">Put it on your home screen</h2>
+    <p>In Safari tap the <b>Share</b> button (square with arrow) → <b>Add to Home Screen</b>.</p>
+    <p>Then always open it from that icon: it works like a normal app and keeps your data.</p>`
+  ];
+  const last=tourStep===steps.length-1;
+  openSheet(`${steps[tourStep]}
+   <div class="row" style="margin-top:16px;justify-content:center;gap:6px">${steps.map((_,i)=>`<span style="width:8px;height:8px;border-radius:9px;background:${i===tourStep?'var(--sun)':'var(--line)'}"></span>`).join('')}</div>
+   <div class="row" style="margin-top:12px">${tourStep?`<button class="ghost" style="flex:1" onclick="tourNext(-1)">Back</button>`:''}
+   <button class="primary" style="flex:2" onclick="tourNext(1)">${last?'Let’s go 🔥':'Next'}</button></div>`);
+}
+function tourNext(dir){
+  if($('#t-name')){const st=S.settings;st.name=$('#t-name').value.trim();st.handle=$('#t-handle').value.trim();st.raceStart=$('#t-start').value||st.raceStart;st.days=Math.max(1,+$('#t-days').value||st.days);save()}
+  tourStep+=dir;
+  if(tourStep>=4){S.onboarded=true;save();closeSheet();tab='home';render();return}
+  openTour();
+}
+function nowCard(){
+  const d=daysToRace(), cd=curDay(), n=dayNo(), tk=totKm(), st=S.settings;
+  const today=PLAN.find(p=>p[0]===-d);
+  let title,steps;
+  if(S.finished||tk>=st.distanceKm-0.5&&n){title='You finished 🏁';steps=[[`Make your finish story`,"sub.story='make';storyT='finish';go('story')"],['Rest. Eat. Sleep. You earned it.',null]]}
+  else if(cd){title=`Day ${n} — you're on the road`;steps=[[S.active?'Running… tap “Crew stop” when you reach the crew':'Tap “Start running” when you set off',"go('race')"],['At every crew stop: type the km from your Watch',"go('race')"],['Tonight: tap “Finish day”, then do the evening checklist',"go('race')"]]}
+  else if(n&&n<st.days){title=`Day ${n} done ✔ — tomorrow is day ${n+1}`;steps=[['Do the evening checklist (food, feet, sleep)',"go('race')"],[`Post your day ${n} story`,"sub.story='make';storyT='live';go('story')"],[`In the morning: Race tab → “Start day ${n+1}”`,"go('race')"]]}
+  else if(d<=0){title='It’s start day! 🏁';steps=[['Race tab → do the morning checklist',"go('race')"],['Tap “Start day 1”, then “Start running”',"go('race')"]]}
+  else{title='What to do today';steps=[];
+    if(today)steps.push([S.checks['plan'+today[0]]?`Training done ✔ (${today[1]})`:`Do today's training (below), then tick “Mark done”`,null]);
+    else steps.push(['Easy run or rest — the full plan starts 16 days before the start',"sub.prep='plan';go('prep')"]);
+    steps.push(['Write it in your training log',"sub.prep='log';go('prep')"]);
+    if(d<=4&&packProgress()<100)steps.push([`Packing: ${packProgress()}% done`,"sub.prep='pack';go('prep')"]);
+    else steps.push(['Post a countdown story',"sub.story='make';storyT='countdown';go('story')"]);
+  }
+  return `<div class="card now"><h3>👉 ${title}</h3>${steps.map(([t,a],i)=>`<button class="nowstep" ${a?`onclick="${a}"`:''}><span class="num">${i+1}</span><span style="flex:1;text-align:left">${t}</span>${a?'<span class="muted">›</span>':''}</button>`).join('')}</div>`;
+}
+
 /* ---------- TODAY ---------- */
 function Home(){
   const d=daysToRace(), st=S.settings;
@@ -209,7 +285,8 @@ function Home(){
       : d===0||S.raceStarted&&!S.finished?`<div class="big">RACE DAY</div><b>Day ${Math.max(1,S.days.length)} of ${st.days}. One crew stop at a time.</b>`
       :`<div class="big">Done 🏁</div><b>${done.toFixed(0)} km in ${S.days.length} days</b>`}
   </div>
-  ${today?`<div class="card"><div class="row between"><h3>Today: ${esc(today[1])}</h3><span class="tag today">today</span></div><p>${esc(today[2])}</p>
+  ${nowCard()}
+  ${today?`<div class="card"><div class="row between"><h3>Today's training: ${esc(today[1])}</h3><span class="tag today">today</span></div><p>${esc(today[2])}</p>
     <label class="check ${S.checks['plan'+today[0]]?'done':''}" style="border:0;padding-bottom:0"><input type="checkbox" ${S.checks['plan'+today[0]]?'checked':''} onchange="toggle('plan${today[0]}')"><span class="t">Mark done</span></label></div>`
     :d>16?`<div class="card"><h3>Base building</h3><p>The day-by-day plan starts 16 days before the start. Until then: build weekly volume with back-to-back long runs and practise eating and drinking on the move.</p></div>`:''}
   <div class="card"><h3>How are you feeling today?</h3>
@@ -581,6 +658,7 @@ async function shareStory(){
 
 window.addEventListener('hashchange',()=>{const t=location.hash.slice(1);if(t!==tab&&TABS.find(x=>x[0]===t)){tab=t;render()}});
 render();
+if(!S.onboarded){tourStep=0;openTour()}
 </script>
 </body>
 </html>
